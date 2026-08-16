@@ -1,11 +1,5 @@
-//
-//  animangoApp.swift
-//  animango
-//
-//  Created by Jeffrey Namkung on 8/15/26.
-//
-
 import SwiftUI
+import SwiftData
 
 @main
 struct animangoApp: App {
@@ -13,5 +7,15 @@ struct animangoApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: [
+            Media.self,
+            VocabularyItem.self,
+            KanjiItem.self,
+            GrammarPoint.self,
+            UserProgress.self,
+            MediaVocabulary.self,
+            MediaKanji.self,
+            MediaGrammar.self
+        ])
     }
 }

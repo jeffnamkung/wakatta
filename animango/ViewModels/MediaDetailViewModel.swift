@@ -1,0 +1,75 @@
+import Foundation
+import SwiftData
+
+@Observable
+final class MediaDetailViewModel {
+    var vocabularyItems: [VocabularyItem] = []
+    var kanjiItems: [KanjiItem] = []
+    var grammarPoints: [GrammarPoint] = []
+    var comprehensionPercentage: Double = 0
+    var isLoading = false
+
+    func loadLanguageData(for media: Media, modelContext: ModelContext) {
+        let mediaID = media.externalID
+
+        // Fetch vocabulary mapped to this media
+        let vocabPredicate = #Predicate<MediaVocabulary> { $0.mediaExternalID == mediaID }
+        let vocabDescriptor = FetchDescriptor(predicate: vocabPredicate)
+        let vocabMappings = (try? modelContext.fetch(vocabDescriptor)) ?? []
+
+        let vocabWords = Set(vocabMappings.map(\.vocabularyWord))
+        if !vocabWords.isEmpty {
+            let allVocab = (try? modelContext.fetch(FetchDescriptor<VocabularyItem>())) ?? []
+            vocabularyItems = allVocab.filter { vocabWords.contains($0.word) }
+        }
+
+        // Fetch kanji mapped to this media
+        let kanjiPredicate = #Predicate<MediaKanji> { $0.mediaExternalID == mediaID }
+        let kanjiDescriptor = FetchDescriptor(predicate: kanjiPredicate)
+        let kanjiMappings = (try? modelContext.fetch(kanjiDescriptor)) ?? []
+
+        let kanjiChars = Set(kanjiMappings.map(\.kanjiCharacter))
+        if !kanjiChars.isEmpty {
+            let allKanji = (try? modelContext.fetch(FetchDescriptor<KanjiItem>())) ?? []
+            kanjiItems = allKanji.filter { kanjiChars.contains($0.character) }
+        }
+
+        // Fetch grammar mapped to this media
+        let grammarPredicate = #Predicate<MediaGrammar> { $0.mediaExternalID == mediaID }
+        let grammarDescriptor = FetchDescriptor(predicate: grammarPredicate)
+        let grammarMappings = (try? modelContext.fetch(grammarDescriptor)) ?? []
+
+        let grammarPatterns = Set(grammarMappings.map(\.grammarPattern))
+        if !grammarPatterns.isEmpty {
+            let allGrammar = (try? modelContext.fetch(FetchDescriptor<GrammarPoint>())) ?? []
+            grammarPoints = allGrammar.filter { grammarPatterns.contains($0.pattern) }
+        }
+
+        // Calculate comprehension
+        calculateComprehension(modelContext: modelContext)
+    }
+
+    private func calculateComprehension(modelContext: ModelContext) {
+        let allItems = vocabularyItems.map(\.word)
+        guard !allItems.isEmpty else {
+            comprehensionPercentage = 0
+            return
+        }
+
+        let progressRecords = (try? modelContext.fetch(FetchDescriptor<UserProgress>())) ?? []
+        let progressByID = Dictionary(grouping: progressRecords, by: \.itemID)
+
+        var totalWeight = 0.0
+        var weightedScore = 0.0
+
+        for vocab in vocabularyItems {
+            let weight = 1.0
+            totalWeight += weight
+            if let progress = progressByID[vocab.word]?.first {
+                weightedScore += progress.knowledgeState.comprehensionWeight * weight
+            }
+        }
+
+        comprehensionPercentage = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0
+    }
+}
