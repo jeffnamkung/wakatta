@@ -5,6 +5,8 @@ struct MediaDetailView: View {
     let media: Media
     @Environment(\.modelContext) private var modelContext
     @State private var isInLibrary: Bool
+    @State private var detailViewModel = MediaDetailViewModel()
+    @State private var movieEpisode: Episode?
 
     init(media: Media) {
         self.media = media
@@ -28,13 +30,31 @@ struct MediaDetailView: View {
                 // Info section
                 infoSection
 
-                // Vocabulary section (placeholder for Phase 4)
+                // Episodes / Chapters section (not for movies or games)
+                if media.mediaType != .movie && media.mediaType != .game {
+                    episodesSection
+                }
+
+                // For movies, show lessons directly
+                if media.mediaType == .movie {
+                    movieLessonsSection
+                }
+
+                // Language points section
                 vocabularySection
             }
             .padding()
         }
         .navigationTitle(media.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            detailViewModel.loadLanguageData(for: media, modelContext: modelContext)
+            if media.mediaType == .movie {
+                let mediaID = media.externalID
+                let predicate = #Predicate<Episode> { $0.mediaExternalID == mediaID }
+                movieEpisode = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first
+            }
+        }
     }
 
     private var heroSection: some View {
@@ -87,10 +107,19 @@ struct MediaDetailView: View {
                     }
                 }
 
-                if let episodes = media.episodeCount {
-                    Text("\(episodes) episodes")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                if let count = media.episodeCount {
+                    switch media.mediaType {
+                    case .manga:
+                        Text("\(count) chapters")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    case .movie:
+                        EmptyView()
+                    default:
+                        Text("\(count) episodes")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 // Genre tags
@@ -172,19 +201,53 @@ struct MediaDetailView: View {
             Text("Language Points")
                 .font(.headline)
 
-            HStack(spacing: 16) {
-                languageStatCard(icon: "text.book.closed", label: "Vocabulary", count: 0)
-                languageStatCard(icon: "character.ja", label: "Kanji", count: 0)
-                languageStatCard(icon: "text.alignleft", label: "Grammar", count: 0)
+            HStack(spacing: 12) {
+                NavigationLink {
+                    VocabularyListView(media: media)
+                } label: {
+                    languageStatCard(
+                        icon: "text.book.closed",
+                        label: "Vocabulary",
+                        count: detailViewModel.vocabularyItems.count,
+                        progressCounts: detailViewModel.vocabProgressCounts
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    KanjiListView(media: media)
+                } label: {
+                    languageStatCard(
+                        icon: "character.ja",
+                        label: "Kanji",
+                        count: detailViewModel.kanjiItems.count,
+                        progressCounts: detailViewModel.kanjiProgressCounts
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    GrammarListView(media: media)
+                } label: {
+                    languageStatCard(
+                        icon: "text.alignleft",
+                        label: "Grammar",
+                        count: detailViewModel.grammarPoints.count,
+                        progressCounts: detailViewModel.grammarProgressCounts
+                    )
+                }
+                .buttonStyle(.plain)
             }
 
-            Text("Add this to your library to start learning the vocabulary and kanji needed to understand this title.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if detailViewModel.vocabularyItems.isEmpty && detailViewModel.kanjiItems.isEmpty && detailViewModel.grammarPoints.isEmpty {
+                Text("Add this to your library to start learning the vocabulary and kanji needed to understand this title.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
-    private func languageStatCard(icon: String, label: String, count: Int) -> some View {
+    private func languageStatCard(icon: String, label: String, count: Int, progressCounts: [KnowledgeState: Int]) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.title3)
@@ -195,11 +258,93 @@ struct MediaDetailView: View {
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+
+            // Progress indicator bar
+            if count > 0 {
+                GeometryReader { geometry in
+                    let width = geometry.size.width
+                    HStack(spacing: 0) {
+                        ForEach(KnowledgeState.allCases, id: \.self) { state in
+                            let stateCount = progressCounts[state] ?? 0
+                            if stateCount > 0 {
+                                Rectangle()
+                                    .fill(state.color)
+                                    .frame(width: width * (Double(stateCount) / Double(count)))
+                            }
+                        }
+                    }
+                    .clipShape(Capsule())
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 8)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    @ViewBuilder
+    private var movieLessonsSection: some View {
+        if let episode = movieEpisode {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Lessons")
+                    .font(.headline)
+
+                NavigationLink {
+                    EpisodeDetailView(episode: episode, media: media)
+                } label: {
+                    HStack {
+                        Image(systemName: "brain.head.profile")
+                            .foregroundStyle(Color.accentColor)
+                        Text("View Lessons")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var episodesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            let sectionLabel = media.mediaType == .manga ? "Chapters" :
+                               media.mediaType == .movie ? "Lessons" : "Episodes"
+
+            Text(sectionLabel)
+                .font(.headline)
+
+            NavigationLink {
+                EpisodeListView(media: media)
+            } label: {
+                HStack {
+                    Image(systemName: "list.number")
+                        .foregroundStyle(Color.accentColor)
+                    Text("View \(sectionLabel)")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    if let count = media.episodeCount, media.mediaType != .movie {
+                        Text("\(count)")
+                            .foregroundStyle(.secondary)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private func toggleLibrary() {

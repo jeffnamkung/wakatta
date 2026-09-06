@@ -14,6 +14,9 @@ struct SampleData {
         loadKanji(modelContext: modelContext)
         loadGrammar(modelContext: modelContext)
         loadMappings(modelContext: modelContext)
+        loadEpisodes(modelContext: modelContext)
+        loadEpisodeMappings(modelContext: modelContext)
+        loadLessons(modelContext: modelContext)
 
         try? modelContext.save()
     }
@@ -244,10 +247,634 @@ struct SampleData {
             modelContext.insert(MediaKanji(mediaExternalID: "game_1", kanjiCharacter: char))
         }
 
+        // FMA: Brotherhood mappings
+        let fmaVocab = ["戦う", "兵士", "力", "仲間", "敵", "守る", "勝つ", "約束"]
+        for word in fmaVocab {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "anime_5114", vocabularyWord: word, frequency: Int.random(in: 1...15)))
+        }
+        let fmaKanji = ["人", "力", "戦", "友", "学"]
+        for char in fmaKanji {
+            modelContext.insert(MediaKanji(mediaExternalID: "anime_5114", kanjiCharacter: char))
+        }
+        let fmaGrammar = ["〜なければならない", "〜ている"]
+        for pattern in fmaGrammar {
+            modelContext.insert(MediaGrammar(mediaExternalID: "anime_5114", grammarPattern: pattern))
+        }
+
+        // Hunter x Hunter mappings
+        let hxhVocab = ["友達", "冒険", "力", "戦う", "敵", "強い", "仲間", "走る"]
+        for word in hxhVocab {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "anime_11061", vocabularyWord: word, frequency: Int.random(in: 1...15)))
+        }
+        let hxhGrammar = ["〜たい", "〜ようにする"]
+        for pattern in hxhGrammar {
+            modelContext.insert(MediaGrammar(mediaExternalID: "anime_11061", grammarPattern: pattern))
+        }
+
+        // Death Note mappings
+        let dnVocab = ["事件", "犯人", "力", "見る", "話す", "敵", "自由", "約束"]
+        for word in dnVocab {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "anime_1535", vocabularyWord: word, frequency: Int.random(in: 1...15)))
+        }
+        let dnGrammar = ["〜ている", "〜ことにする"]
+        for pattern in dnGrammar {
+            modelContext.insert(MediaGrammar(mediaExternalID: "anime_1535", grammarPattern: pattern))
+        }
+
+        // One Punch Man mappings
+        let opmVocab = ["強い", "戦う", "敵", "力", "走る", "勝つ", "負ける"]
+        for word in opmVocab {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "anime_21", vocabularyWord: word, frequency: Int.random(in: 1...15)))
+        }
+        let opmGrammar = ["〜ている", "〜たい"]
+        for pattern in opmGrammar {
+            modelContext.insert(MediaGrammar(mediaExternalID: "anime_21", grammarPattern: pattern))
+        }
+
+        // Manga mappings — shared vocabulary
+        let mangaAction = ["戦う", "力", "敵", "仲間", "強い", "守る", "勝つ", "負ける"]
+        for mediaID in ["manga_2", "manga_13", "manga_1706", "manga_656", "manga_44347", "manga_25"] {
+            for word in mangaAction {
+                modelContext.insert(MediaVocabulary(mediaExternalID: mediaID, vocabularyWord: word, frequency: Int.random(in: 1...12)))
+            }
+            for pattern in ["〜ている", "〜たい"] {
+                modelContext.insert(MediaGrammar(mediaExternalID: mediaID, grammarPattern: pattern))
+            }
+        }
+        // Additional manga-specific vocab
+        for word in ["冒険", "武器", "魔法"] {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "manga_13", vocabularyWord: word, frequency: Int.random(in: 1...10)))
+            modelContext.insert(MediaVocabulary(mediaExternalID: "manga_1706", vocabularyWord: word, frequency: Int.random(in: 1...10)))
+        }
+
         // JDrama mappings
-        let dramaVocab = ["事件", "犯人", "恋愛", "会社", "医者", "話す", "見る", "約束"]
-        for word in dramaVocab {
-            modelContext.insert(MediaVocabulary(mediaExternalID: "drama_1", vocabularyWord: word, frequency: Int.random(in: 1...10)))
+        let dramaCommon = ["事件", "犯人", "恋愛", "会社", "医者", "話す", "見る", "約束"]
+        for word in dramaCommon {
+            for mediaID in ["drama_tls", "drama_hn", "drama_th"] {
+                modelContext.insert(MediaVocabulary(mediaExternalID: mediaID, vocabularyWord: word, frequency: Int.random(in: 1...10)))
+            }
+        }
+        for mediaID in ["drama_tls", "drama_hn", "drama_th"] {
+            for pattern in ["〜ている", "〜たい", "〜てもいい"] {
+                modelContext.insert(MediaGrammar(mediaExternalID: mediaID, grammarPattern: pattern))
+            }
+        }
+
+        // Movie mappings (Your Name)
+        let movieVocab = ["友達", "学校", "見る", "話す", "約束", "守る", "自由", "恋愛"]
+        for word in movieVocab {
+            modelContext.insert(MediaVocabulary(mediaExternalID: "movie_372058", vocabularyWord: word, frequency: Int.random(in: 1...10)))
+        }
+        let movieKanji = ["友", "学", "見", "話", "自", "由"]
+        for char in movieKanji {
+            modelContext.insert(MediaKanji(mediaExternalID: "movie_372058", kanjiCharacter: char))
+        }
+        let movieGrammar = ["〜たい", "〜ている", "〜ことにする"]
+        for pattern in movieGrammar {
+            modelContext.insert(MediaGrammar(mediaExternalID: "movie_372058", grammarPattern: pattern))
+        }
+
+        // Other movie mappings
+        let otherMovieVocab = ["友達", "見る", "話す", "約束", "守る", "食べる"]
+        for mediaID in ["movie_129", "movie_149870", "movie_508883", "movie_4935", "movie_568160"] {
+            for word in otherMovieVocab {
+                modelContext.insert(MediaVocabulary(mediaExternalID: mediaID, vocabularyWord: word, frequency: Int.random(in: 1...10)))
+            }
+            for pattern in ["〜ている", "〜たい"] {
+                modelContext.insert(MediaGrammar(mediaExternalID: mediaID, grammarPattern: pattern))
+            }
+        }
+    }
+
+    // MARK: - Episodes
+
+    private static func loadEpisodes(modelContext: ModelContext) {
+        // Attack on Titan episodes
+        let aotEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_16498_ep1", 1, "To You, in 2000 Years", "二千年後の君へ",
+             "After 100 years of peace, humanity's calm is shattered when a colossal Titan breaches the wall."),
+            ("anime_16498_ep2", 2, "That Day", "その日",
+             "After the Titans break through the wall, Eren vows to kill every last Titan."),
+            ("anime_16498_ep3", 3, "A Dim Light Amid Despair", "絶望の中で鈍く光る",
+             "Eren begins his training as a cadet in the Survey Corps.")
+        ]
+
+        for ep in aotEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_16498", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Demon Slayer episodes
+        let dsEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_38000_ep1", 1, "Cruelty", "残酷",
+             "Tanjiro returns home to find his family slaughtered by demons. Only his sister Nezuko survives, but she has been turned into a demon."),
+            ("anime_38000_ep2", 2, "Trainer Sakonji Urokodaki", "育手・鱗滝左近次",
+             "Tanjiro begins his training under Urokodaki to become a demon slayer.")
+        ]
+
+        for ep in dsEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_38000", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Fullmetal Alchemist: Brotherhood episodes
+        let fmaEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_5114_ep1", 1, "Fullmetal Alchemist", "鋼の錬金術師",
+             "The Elric brothers accept a mission to capture a rogue alchemist terrorizing a small town."),
+            ("anime_5114_ep2", 2, "The First Day", "はじまりの日",
+             "Ed and Al recall the tragedy that started their journey to find the Philosopher's Stone."),
+            ("anime_5114_ep3", 3, "City of Heresy", "邪教の街",
+             "The brothers arrive in Liore, where a priest claims to perform miracles.")
+        ]
+
+        for ep in fmaEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_5114", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Hunter x Hunter episodes
+        let hxhEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_11061_ep1", 1, "Departure × And × Friends", "タビダチ×ト×ナカマタチ",
+             "Gon sets out from Whale Island to take the Hunter Exam and find his father."),
+            ("anime_11061_ep2", 2, "Test × Of × Tests", "シケン×ノ×シケン",
+             "Gon, Kurapika, and Leorio face the first phase of the notoriously difficult Hunter Exam."),
+            ("anime_11061_ep3", 3, "Rivals × For × Survival", "ライバル×ガ×サバイバル",
+             "The examinees must navigate a treacherous path through the Milsy Wetlands.")
+        ]
+
+        for ep in hxhEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_11061", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Death Note episodes
+        let dnEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_1535_ep1", 1, "Rebirth", "新生",
+             "Light Yagami discovers the Death Note and begins to test its terrifying power."),
+            ("anime_1535_ep2", 2, "Confrontation", "対決",
+             "The mysterious detective L begins his investigation to find the identity of Kira."),
+            ("anime_1535_ep3", 3, "Dealings", "取引",
+             "Light learns about the Shinigami Eyes from Ryuk while L narrows down his search.")
+        ]
+
+        for ep in dnEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_1535", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // One Punch Man episodes
+        let opmEpisodes: [(String, Int, String, String?, String?)] = [
+            ("anime_21_ep1", 1, "The Strongest Man", "最強の男",
+             "Saitama recalls how he became a hero for fun and defeats every villain with a single punch."),
+            ("anime_21_ep2", 2, "The Lone Cyborg", "孤独のサイボーグ",
+             "A powerful cyborg named Genos seeks Saitama as his master after witnessing his strength."),
+            ("anime_21_ep3", 3, "The Obsessive Scientist", "執念の科学者",
+             "Saitama and Genos face the House of Evolution and its dangerous creations.")
+        ]
+
+        for ep in opmEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "anime_21", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Manga chapters
+        // Berserk
+        let berserkChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_2_ch1", 1, "The Black Swordsman", "黒い剣士",
+             "A lone swordsman arrives at a town terrorized by a demon and confronts it head-on."),
+            ("manga_2_ch2", 2, "The Brand of Sacrifice", "生贄の烙印",
+             "The Black Swordsman's cursed brand draws demons to him wherever he goes."),
+            ("manga_2_ch3", 3, "Guardians of Desire (1)", "望みの守護天使①",
+             "Guts encounters a demonic entity guarding a castle and the count within.")
+        ]
+
+        for ch in berserkChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_2", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // One Piece
+        let opChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_13_ch1", 1, "Romance Dawn", "ROMANCE DAWN -冒険の夜明け-",
+             "Monkey D. Luffy sets out to sea to become the King of the Pirates."),
+            ("manga_13_ch2", 2, "They Call Him 'Straw Hat Luffy'", "その男「麦わらのルフィ」",
+             "Luffy arrives at a marine base and encounters the pirate hunter Roronoa Zoro."),
+            ("manga_13_ch3", 3, "Enter Zoro: Pirate Hunter", "海賊狩りのゾロ登場",
+             "Luffy frees Zoro from captivity and recruits him as his first crewmate.")
+        ]
+
+        for ch in opChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_13", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // JoJo's Steel Ball Run
+        let sbrChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_1706_ch1", 1, "The Steel Ball Run Press Conference", "スティール・ボール・ラン記者会見",
+             "A grand cross-country horse race across America is announced, drawing competitors worldwide."),
+            ("manga_1706_ch2", 2, "Gyro Zeppeli", "ジャイロ・ツェペリ",
+             "A mysterious Italian competitor demonstrates the power of his spinning steel balls."),
+            ("manga_1706_ch3", 3, "Johnny Joestar", "ジョニィ・ジョースター",
+             "A paraplegic former jockey witnesses Gyro's power and decides to enter the race.")
+        ]
+
+        for ch in sbrChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_1706", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // Vagabond
+        let vagabondChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_656_ch1", 1, "Shinmen Takezō", "新免武蔵",
+             "After the Battle of Sekigahara, a young warrior named Takezō struggles to survive."),
+            ("manga_656_ch2", 2, "On the Run", "逃亡",
+             "Takezō and his companion Matahachi flee through the countryside after the devastating battle."),
+            ("manga_656_ch3", 3, "A Wanted Man", "お尋ね者",
+             "Takezō becomes a fugitive, hunted by the villagers and samurai alike.")
+        ]
+
+        for ch in vagabondChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_656", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // Chainsaw Man
+        let csmChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_44347_ch1", 1, "Dog & Chainsaw", "犬とチェンソー",
+             "Denji, a young man burdened by debt, merges with his devil dog Pochita to become Chainsaw Man."),
+            ("manga_44347_ch2", 2, "The Place Where Pochita Is", "ポチタのいる場所",
+             "Denji is recruited by Makima into the Public Safety Devil Hunters."),
+            ("manga_44347_ch3", 3, "Arrival in Tokyo", "東京到着",
+             "Denji experiences city life for the first time and meets his new partner Power.")
+        ]
+
+        for ch in csmChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_44347", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // Fullmetal Alchemist (manga)
+        let fmaMangaChapters: [(String, Int, String, String?, String?)] = [
+            ("manga_25_ch1", 1, "The Two Alchemists", "二人の錬金術師",
+             "The Elric brothers arrive in Liore, exposing a fraudulent priest using a Philosopher's Stone."),
+            ("manga_25_ch2", 2, "The Price of Life", "命の代価",
+             "Edward and Alphonse recall the terrible cost of their attempt to resurrect their mother."),
+            ("manga_25_ch3", 3, "The Mining Town", "炭鉱の街",
+             "The brothers travel to Youswell and help the townspeople against a corrupt military officer.")
+        ]
+
+        for ch in fmaMangaChapters {
+            modelContext.insert(Episode(
+                id: ch.0, mediaExternalID: "manga_25", episodeNumber: ch.1,
+                title: ch.2, titleJapanese: ch.3, synopsis: ch.4
+            ))
+        }
+
+        // Movies
+        // Your Name (existing)
+        modelContext.insert(Episode(
+            id: "movie_372058_full", mediaExternalID: "movie_372058", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "君の名は。",
+            synopsis: "Two teenagers share a profound, magical connection upon discovering they are swapping bodies."
+        ))
+
+        // Spirited Away
+        modelContext.insert(Episode(
+            id: "movie_129_full", mediaExternalID: "movie_129", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "千と千尋の神隠し",
+            synopsis: "A young girl becomes trapped in a strange new world of spirits and must find the courage to free herself and her parents."
+        ))
+
+        // Suzume
+        modelContext.insert(Episode(
+            id: "movie_149870_full", mediaExternalID: "movie_149870", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "すずめの戸締まり",
+            synopsis: "A 17-year-old girl helps a mysterious young man close doors releasing disasters across Japan."
+        ))
+
+        // Princess Mononoke
+        modelContext.insert(Episode(
+            id: "movie_508883_full", mediaExternalID: "movie_508883", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "もののけ姫",
+            synopsis: "A cursed prince journeys west and finds himself caught in a war between forest gods and a mining colony."
+        ))
+
+        // Howl's Moving Castle
+        modelContext.insert(Episode(
+            id: "movie_4935_full", mediaExternalID: "movie_4935", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "ハウルの動く城",
+            synopsis: "A shy young woman cursed with an old body seeks the help of a wizard and his magical moving castle."
+        ))
+
+        // Weathering with You
+        modelContext.insert(Episode(
+            id: "movie_568160_full", mediaExternalID: "movie_568160", episodeNumber: 1,
+            title: "Full Movie", titleJapanese: "天気の子",
+            synopsis: "A runaway high school boy befriends a girl who can manipulate the weather in rain-soaked Tokyo."
+        ))
+
+        // JDrama episodes
+        // Tokyo Love Story
+        let tlsEpisodes: [(String, Int, String, String?, String?)] = [
+            ("drama_tls_ep1", 1, "Love in Tokyo", "東京での恋",
+             "Kanji returns to Tokyo and reunites with Rika, a free-spirited coworker who declares her love for him."),
+            ("drama_tls_ep2", 2, "Crossed Signals", "すれ違い",
+             "Misunderstandings arise as Kanji struggles between his feelings for Rika and his childhood friend Satomi."),
+            ("drama_tls_ep3", 3, "The Distance Between Us", "二人の距離",
+             "Rika's bold personality clashes with Kanji's indecisiveness, testing their budding relationship.")
+        ]
+
+        for ep in tlsEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "drama_tls", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Hanzawa Naoki
+        let hnEpisodes: [(String, Int, String, String?, String?)] = [
+            ("drama_hn_ep1", 1, "The Trap", "罠",
+             "Banker Hanzawa Naoki discovers he's been set up to take the fall for a massive bad loan."),
+            ("drama_hn_ep2", 2, "Counterattack", "反撃",
+             "Hanzawa begins his investigation to uncover the truth and clear his name."),
+            ("drama_hn_ep3", 3, "Double Payback", "倍返し",
+             "Hanzawa confronts his superiors with evidence and delivers his signature promise of revenge.")
+        ]
+
+        for ep in hnEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "drama_hn", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+
+        // Terrace House
+        let thEpisodes: [(String, Int, String, String?, String?)] = [
+            ("drama_th_ep1", 1, "New Beginnings", "新しい始まり",
+             "Six strangers move into a shared house in Tokyo and begin to navigate life together."),
+            ("drama_th_ep2", 2, "First Impressions", "第一印象",
+             "The housemates get to know each other through daily interactions and shared meals."),
+            ("drama_th_ep3", 3, "Unspoken Feelings", "言えない気持ち",
+             "Romantic tensions begin to surface as the housemates grow closer.")
+        ]
+
+        for ep in thEpisodes {
+            modelContext.insert(Episode(
+                id: ep.0, mediaExternalID: "drama_th", episodeNumber: ep.1,
+                title: ep.2, titleJapanese: ep.3, synopsis: ep.4
+            ))
+        }
+    }
+
+    // MARK: - Episode-to-Language Mappings
+
+    private static func loadEpisodeMappings(modelContext: ModelContext) {
+        // AoT Episode 1: titans, walls, humanity
+        let aotEp1Vocab = ["巨人", "壁", "進撃", "人類", "見る", "食べる"]
+        for word in aotEp1Vocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "anime_16498_ep1", vocabularyWord: word))
+        }
+        for char in ["巨", "人", "壁"] {
+            modelContext.insert(EpisodeKanji(episodeID: "anime_16498_ep1", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_16498_ep1", grammarPattern: "〜ている"))
+
+        // AoT Episode 2: soldiers, fighting, freedom
+        let aotEp2Vocab = ["兵士", "戦う", "自由", "力", "敵", "守る"]
+        for word in aotEp2Vocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "anime_16498_ep2", vocabularyWord: word))
+        }
+        for char in ["兵", "戦", "自", "由", "力"] {
+            modelContext.insert(EpisodeKanji(episodeID: "anime_16498_ep2", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_16498_ep2", grammarPattern: "〜なければならない"))
+
+        // AoT Episode 3: training, comrades, school
+        let aotEp3Vocab = ["調査", "仲間", "強い", "学校", "走る", "友達"]
+        for word in aotEp3Vocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "anime_16498_ep3", vocabularyWord: word))
+        }
+        for char in ["進", "撃", "友", "学"] {
+            modelContext.insert(EpisodeKanji(episodeID: "anime_16498_ep3", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_16498_ep3", grammarPattern: "〜ようにする"))
+
+        // DS Episode 1: demons, sister, strong
+        let dsEp1Vocab = ["鬼", "妹", "強い", "守る", "見る", "食べる"]
+        for word in dsEp1Vocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "anime_38000_ep1", vocabularyWord: word))
+        }
+        for char in ["鬼", "見", "食"] {
+            modelContext.insert(EpisodeKanji(episodeID: "anime_38000_ep1", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_38000_ep1", grammarPattern: "〜たい"))
+
+        // DS Episode 2: training, breathing, blade
+        let dsEp2Vocab = ["刃", "呼吸", "修行", "戦う", "力", "仲間"]
+        for word in dsEp2Vocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "anime_38000_ep2", vocabularyWord: word))
+        }
+        for char in ["刃", "力", "友"] {
+            modelContext.insert(EpisodeKanji(episodeID: "anime_38000_ep2", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_38000_ep2", grammarPattern: "〜ている"))
+        modelContext.insert(EpisodeGrammar(episodeID: "anime_38000_ep2", grammarPattern: "〜てもいい"))
+
+        // Movie: Your Name
+        let movieVocab = ["友達", "学校", "見る", "話す", "約束", "守る"]
+        for word in movieVocab {
+            modelContext.insert(EpisodeVocabulary(episodeID: "movie_372058_full", vocabularyWord: word))
+        }
+        for char in ["友", "学", "見", "話"] {
+            modelContext.insert(EpisodeKanji(episodeID: "movie_372058_full", kanjiCharacter: char))
+        }
+        modelContext.insert(EpisodeGrammar(episodeID: "movie_372058_full", grammarPattern: "〜たい"))
+        modelContext.insert(EpisodeGrammar(episodeID: "movie_372058_full", grammarPattern: "〜ことにする"))
+    }
+
+    // MARK: - Lessons and Exercises
+
+    private static func loadLessons(modelContext: ModelContext) {
+        // AoT Episode 1 — Lesson: Ongoing Actions with 〜ている
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_16498_ep1_lesson1",
+            episodeID: "anime_16498_ep1",
+            grammarPattern: "〜ている",
+            title: "Describing What's Happening",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 巨人 mean?", "giant; titan", "Think about the show's title"),
+                (.kanjiReading, "How do you read 壁?", "かべ", "It protects the city"),
+                (.grammarFill, "巨人が壁を破壊___。(is destroying)", "している", "Use 〜ている for ongoing action"),
+                (.translation, "Translate: 人類は壁の中に住んでいる。", "Humanity is living inside the walls.", nil),
+                (.pronunciation, "Say: 人類は壁の中に住んでいる。", "人類は壁の中に住んでいる。", "Speak clearly and at a natural pace"),
+            ]
+        )
+
+        // AoT Episode 2 — Lesson: Obligation with 〜なければならない
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_16498_ep2_lesson1",
+            episodeID: "anime_16498_ep2",
+            grammarPattern: "〜なければならない",
+            title: "Expressing 'Must Do'",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 兵士 mean?", "soldier", "They fight the titans"),
+                (.kanjiReading, "How do you read 戦?", "いくさ / たたか.う", "War and battle"),
+                (.grammarFill, "兵士たちは戦わ___。(must fight)", "なければならない", "Express obligation"),
+                (.translation, "Translate: 自由のために戦わなければならない。", "We must fight for freedom.", nil),
+            ]
+        )
+
+        // AoT Episode 3 — Lesson: Making Effort with 〜ようにする
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_16498_ep3_lesson1",
+            episodeID: "anime_16498_ep3",
+            grammarPattern: "〜ようにする",
+            title: "Making an Effort To Do",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 仲間 mean?", "companion; comrade", "Your fellow soldiers"),
+                (.kanjiReading, "How do you read 友?", "とも", "A close companion"),
+                (.grammarFill, "毎日走る___している。(trying to)", "ように", "Express making an effort"),
+                (.translation, "Translate: 強くなるようにする。", "I'll make an effort to become strong.", nil),
+            ]
+        )
+
+        // DS Episode 1 — Lesson: Expressing Desire with 〜たい
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_38000_ep1_lesson1",
+            episodeID: "anime_38000_ep1",
+            grammarPattern: "〜たい",
+            title: "Saying What You Want",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 妹 mean?", "younger sister", "Tanjiro's motivation"),
+                (.kanjiReading, "How do you read 鬼?", "おに", "The enemies in this show"),
+                (.grammarFill, "妹を守り___。(want to protect)", "たい", "Express your desire"),
+                (.translation, "Translate: 強くなりたい。", "I want to become strong.", nil),
+                (.pronunciation, "Say: 強くなりたい。", "強くなりたい。", "Speak clearly and at a natural pace"),
+            ]
+        )
+
+        // DS Episode 2 — Lesson: Ongoing State with 〜ている
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_38000_ep2_lesson1",
+            episodeID: "anime_38000_ep2",
+            grammarPattern: "〜ている",
+            title: "Describing Ongoing Training",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 修行 mean?", "training; ascetic practice", "What Tanjiro is doing"),
+                (.kanjiReading, "How do you read 刃?", "やいば", "The weapon's edge"),
+                (.grammarFill, "水の呼吸を練習___。(is practicing)", "している", "Use 〜ている for ongoing action"),
+                (.translation, "Translate: 仲間と一緒に戦っている。", "Fighting together with comrades.", nil),
+            ]
+        )
+
+        // DS Episode 2 — Lesson 2: Permission with 〜てもいい
+        loadLesson(
+            modelContext: modelContext,
+            id: "anime_38000_ep2_lesson2",
+            episodeID: "anime_38000_ep2",
+            grammarPattern: "〜てもいい",
+            title: "Asking for Permission",
+            order: 2,
+            exercises: [
+                (.vocabRecall, "What does 呼吸 mean?", "breathing", "A key technique in the show"),
+                (.grammarFill, "この刀を使っ___ですか？(may I use?)", "てもいい", "Ask for permission"),
+                (.translation, "Translate: ここで休んでもいいですか？", "May I rest here?", nil),
+            ]
+        )
+
+        // Movie: Your Name — Lesson: Decisions with 〜ことにする
+        loadLesson(
+            modelContext: modelContext,
+            id: "movie_372058_full_lesson1",
+            episodeID: "movie_372058_full",
+            grammarPattern: "〜たい",
+            title: "Expressing Wishes",
+            order: 1,
+            exercises: [
+                (.vocabRecall, "What does 約束 mean?", "promise", "Something you keep"),
+                (.kanjiReading, "How do you read 見?", "み.る", "To watch or see"),
+                (.grammarFill, "もう一度会い___。(want to meet)", "たい", "Express your desire"),
+                (.translation, "Translate: あの人に会いたい。", "I want to meet that person.", nil),
+            ]
+        )
+
+        loadLesson(
+            modelContext: modelContext,
+            id: "movie_372058_full_lesson2",
+            episodeID: "movie_372058_full",
+            grammarPattern: "〜ことにする",
+            title: "Making Decisions",
+            order: 2,
+            exercises: [
+                (.vocabRecall, "What does 守る mean?", "to protect; to guard", "To keep someone safe"),
+                (.grammarFill, "東京に行く___した。(decided to)", "ことに", "Express a decision made"),
+                (.translation, "Translate: 約束を守ることにした。", "I decided to keep my promise.", nil),
+            ]
+        )
+    }
+
+    // MARK: - Lesson Helper
+
+    private static func loadLesson(
+        modelContext: ModelContext,
+        id: String,
+        episodeID: String,
+        grammarPattern: String,
+        title: String,
+        order: Int,
+        exercises: [(ExerciseType, String, String, String?)]
+    ) {
+        let lesson = Lesson(
+            id: id,
+            episodeID: episodeID,
+            grammarPattern: grammarPattern,
+            title: title,
+            order: order
+        )
+        modelContext.insert(lesson)
+
+        for (index, ex) in exercises.enumerated() {
+            modelContext.insert(LessonExercise(
+                id: "\(id)_ex\(index + 1)",
+                lessonID: id,
+                exerciseType: ex.0,
+                prompt: ex.1,
+                answer: ex.2,
+                hint: ex.3,
+                order: index + 1
+            ))
         }
     }
 }

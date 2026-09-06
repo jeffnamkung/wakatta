@@ -7,6 +7,7 @@ final class DiscoverViewModel {
     var searchResults: [Media] = []
     var topAnime: [Media] = []
     var topManga: [Media] = []
+    var popularMovies: [Media] = []
     var popularDrama: [Media] = []
     var selectedMediaType: MediaType?
     var isLoading = false
@@ -32,10 +33,12 @@ final class DiscoverViewModel {
 
         async let anime = searchService.getTopAnime()
         async let manga = searchService.getTopManga()
+        async let movies = searchService.getPopularMovies()
         async let drama = searchService.getPopularDrama()
 
         topAnime = await anime
         topManga = await manga
+        popularMovies = await movies
         popularDrama = await drama
 
         // Use fallback data when APIs are unavailable
@@ -45,12 +48,19 @@ final class DiscoverViewModel {
         if topManga.isEmpty {
             topManga = Self.fallbackManga
         }
+        if popularMovies.isEmpty {
+            popularMovies = Self.fallbackMovies
+        }
+        if popularDrama.isEmpty {
+            popularDrama = Self.fallbackDrama
+        }
         isLoading = false
     }
 
     func retryLoading() async {
         topAnime = []
         topManga = []
+        popularMovies = []
         popularDrama = []
         errorMessage = nil
         await loadInitialContent()
@@ -114,6 +124,32 @@ final class DiscoverViewModel {
               synopsis: "Denji has a simple dream—to live a happy and peaceful life, spending time with a girl he likes. But owing a huge debt to the yakuza has left him with no such luck.", imageURL: "https://cdn.myanimelist.net/images/manga/3/216464l.jpg", score: 8.70, episodeCount: 97, status: "Publishing", genres: ["Action", "Fantasy", "Horror"], releaseYear: 2018, isInLibrary: false),
         Media(externalID: "manga_25", mediaType: .manga, title: "Fullmetal Alchemist", titleJapanese: "鋼の錬金術師",
               synopsis: "Alchemy is bound by the Law of Equivalent Exchange—to obtain, something of equal value must be lost.", imageURL: "https://cdn.myanimelist.net/images/manga/1/27600l.jpg", score: 9.07, episodeCount: 116, status: "Finished", genres: ["Action", "Adventure", "Drama", "Fantasy"], releaseYear: 2001, isInLibrary: false),
+    ]
+
+    private static let fallbackMovies: [Media] = [
+        Media(externalID: "movie_372058", mediaType: .movie, title: "Your Name", titleJapanese: "君の名は。",
+              synopsis: "Two teenagers share a profound, magical connection upon discovering they are swapping bodies.", imageURL: "https://image.tmdb.org/t/p/w500/q719jXXEhI1THMotlPeGtMFr7Jd.jpg", score: 8.4, episodeCount: nil, status: "Released", genres: ["Animation", "Romance", "Drama"], releaseYear: 2016, isInLibrary: false),
+        Media(externalID: "movie_129", mediaType: .movie, title: "Spirited Away", titleJapanese: "千と千尋の神隠し",
+              synopsis: "A young girl becomes trapped in a strange new world of spirits. When her parents undergo a mysterious transformation, she must call upon the courage she never knew she had.", imageURL: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg", score: 8.5, episodeCount: nil, status: "Released", genres: ["Animation", "Fantasy", "Adventure"], releaseYear: 2001, isInLibrary: false),
+        Media(externalID: "movie_149870", mediaType: .movie, title: "Suzume", titleJapanese: "すずめの戸締まり",
+              synopsis: "A modern action adventure road story where a 17-year-old girl named Suzume helps a mysterious young man close doors from the other side that are releasing disasters all over Japan.", imageURL: "https://image.tmdb.org/t/p/w500/vIeu8WysZrTSFb2uhPViKjX9EcC.jpg", score: 7.9, episodeCount: nil, status: "Released", genres: ["Animation", "Adventure", "Fantasy"], releaseYear: 2022, isInLibrary: false),
+        Media(externalID: "movie_508883", mediaType: .movie, title: "Princess Mononoke", titleJapanese: "もののけ姫",
+              synopsis: "Ashitaka, a prince, is cursed by a demon boar and seeks a cure in the lands to the west. He finds himself in the middle of a war between the forest gods and a mining colony.", imageURL: "https://image.tmdb.org/t/p/w500/cMYCDADoLKLbB83g4WnJegaZimC.jpg", score: 8.3, episodeCount: nil, status: "Released", genres: ["Animation", "Adventure", "Fantasy"], releaseYear: 1997, isInLibrary: false),
+        Media(externalID: "movie_4935", mediaType: .movie, title: "Howl's Moving Castle", titleJapanese: "ハウルの動く城",
+              synopsis: "When Sophie, a shy young woman, is cursed with an old body by a spiteful witch, her only chance of breaking the spell lies with a self-indulgent yet insecure young wizard and his companions.", imageURL: "https://image.tmdb.org/t/p/w500/TkTPELv4kC3u1lkloush8skOjE.jpg", score: 8.2, episodeCount: nil, status: "Released", genres: ["Animation", "Fantasy", "Adventure"], releaseYear: 2004, isInLibrary: false),
+        Media(externalID: "movie_568160", mediaType: .movie, title: "Weathering with You", titleJapanese: "天気の子",
+              synopsis: "A high school boy who has run away to Tokyo befriends a girl who appears to be able to manipulate the weather.", imageURL: "https://image.tmdb.org/t/p/w500/qgrk7r1fV4IjuoeiGS5HOhXNdLJ.jpg", score: 8.0, episodeCount: nil, status: "Released", genres: ["Animation", "Romance", "Drama", "Fantasy"], releaseYear: 2019, isInLibrary: false),
+    ]
+
+    private static let fallbackDrama: [Media] = [
+        Media(externalID: "drama_tls", mediaType: .jdrama, title: "Tokyo Love Story", titleJapanese: "東京ラブストーリー",
+              synopsis: "A young woman falls in love with her coworker, but their relationship is complicated by old friendships and misunderstandings in 1990s Tokyo.", imageURL: nil, score: 8.2, episodeCount: 11, status: "Finished", genres: ["Romance", "Drama"], releaseYear: 1991, isInLibrary: false),
+        Media(externalID: "drama_hn", mediaType: .jdrama, title: "Hanzawa Naoki", titleJapanese: "半沢直樹",
+              synopsis: "A talented banker fights against corruption within his own organization, vowing to repay wrongdoing with double the vengeance.", imageURL: nil, score: 9.0, episodeCount: 10, status: "Finished", genres: ["Drama", "Business", "Thriller"], releaseYear: 2013, isInLibrary: false),
+        Media(externalID: "drama_th", mediaType: .jdrama, title: "Terrace House", titleJapanese: "テラスハウス",
+              synopsis: "Six strangers live together in a house, creating unscripted drama as they navigate work, love, and friendships in modern Japan.", imageURL: nil, score: 7.8, episodeCount: 46, status: "Finished", genres: ["Reality", "Romance", "Slice of Life"], releaseYear: 2012, isInLibrary: false),
+        Media(externalID: "drama_alicein", mediaType: .jdrama, title: "Alice in Borderland", titleJapanese: "今際の国のアリス",
+              synopsis: "A gamer and his friends find themselves in a deserted Tokyo where they must compete in dangerous games to survive.", imageURL: nil, score: 8.5, episodeCount: 8, status: "Finished", genres: ["Thriller", "Sci-Fi", "Action"], releaseYear: 2020, isInLibrary: false),
     ]
 
     func addToLibrary(_ media: Media, modelContext: ModelContext) {

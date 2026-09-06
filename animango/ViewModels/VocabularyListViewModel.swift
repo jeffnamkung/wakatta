@@ -13,7 +13,7 @@ final class VocabularyListViewModel {
 
         if let filter = filterState {
             items = items.filter { vocab in
-                let state = progressMap[vocab.word]?.knowledgeState ?? .unknown
+                let state = progressMap[vocab.word]?.knowledgeState ?? .neverLearned
                 return state == filter
             }
         }
@@ -29,16 +29,11 @@ final class VocabularyListViewModel {
         return items
     }
 
-    var knownCount: Int {
-        vocabularyItems.filter { progressMap[$0.word]?.knowledgeState == .known }.count
-    }
-
-    var learningCount: Int {
-        vocabularyItems.filter { progressMap[$0.word]?.knowledgeState == .learning }.count
-    }
-
-    var unknownCount: Int {
-        vocabularyItems.count - knownCount - learningCount
+    func count(for state: KnowledgeState) -> Int {
+        if state == .neverLearned {
+            return vocabularyItems.filter { progressMap[$0.word]?.knowledgeState == nil || progressMap[$0.word]?.knowledgeState == .neverLearned }.count
+        }
+        return vocabularyItems.filter { progressMap[$0.word]?.knowledgeState == state }.count
     }
 
     func loadVocabulary(for media: Media, modelContext: ModelContext) {
@@ -63,6 +58,6 @@ final class VocabularyListViewModel {
     }
 
     func knowledgeState(for word: String) -> KnowledgeState {
-        progressMap[word]?.knowledgeState ?? .unknown
+        progressMap[word]?.knowledgeState ?? .neverLearned
     }
 }

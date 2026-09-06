@@ -31,6 +31,11 @@ final class MediaSearchService {
                     (try? await self.igdbService.searchGames(query: query)) ?? []
                 }
             }
+            if mediaTypes.contains(.movie) {
+                group.addTask {
+                    (try? await self.tmdbService.searchMovies(query: query).movies) ?? []
+                }
+            }
 
             var results: [Media] = []
             for await items in group {
@@ -50,5 +55,9 @@ final class MediaSearchService {
 
     func getTopManga() async -> [Media] {
         (try? await jikanService.getTopManga()) ?? []
+    }
+
+    func getPopularMovies() async -> [Media] {
+        (try? await tmdbService.discoverJapaneseMovies()) ?? []
     }
 }

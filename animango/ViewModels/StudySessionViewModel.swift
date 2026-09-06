@@ -96,6 +96,32 @@ final class StudySessionViewModel {
             })
         }
 
+        // Load grammar cards
+        if sessionType == nil || sessionType == .grammar {
+            let grammarItems: [GrammarPoint]
+            if let media = media {
+                let mediaID = media.externalID
+                let predicate = #Predicate<MediaGrammar> { $0.mediaExternalID == mediaID }
+                let mappings = (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
+                let patterns = Set(mappings.map(\.grammarPattern))
+                let allGrammar = (try? modelContext.fetch(FetchDescriptor<GrammarPoint>())) ?? []
+                grammarItems = allGrammar.filter { patterns.contains($0.pattern) }
+            } else {
+                grammarItems = (try? modelContext.fetch(FetchDescriptor<GrammarPoint>())) ?? []
+            }
+
+            allCards.append(contentsOf: grammarItems.map { grammar in
+                StudyCardData(
+                    itemID: grammar.pattern,
+                    itemType: .grammar,
+                    frontText: grammar.pattern,
+                    frontSubtext: grammar.jlptLevel.map { "JLPT N\($0)" },
+                    reading: grammar.examples.first?.japanese ?? "",
+                    meaning: grammar.explanation
+                )
+            })
+        }
+
         // Filter to items that are due for review or new
         let allProgress = (try? modelContext.fetch(FetchDescriptor<UserProgress>())) ?? []
         let progressByID = Dictionary(uniqueKeysWithValues: allProgress.map { ($0.itemID, $0) })
@@ -103,7 +129,7 @@ final class StudySessionViewModel {
 
         cards = allCards.filter { card in
             guard let prog = progressByID[card.itemID] else { return true }
-            if prog.knowledgeState == .known {
+            if prog.knowledgeState == .mastered {
                 return prog.nextReviewDate.map { $0 <= now } ?? false
             }
             return true
@@ -155,7 +181,7 @@ final class StudySessionViewModel {
             sessionResult.correctCount += 1
         }
 
-        if previousState != .known && progress.knowledgeState == .known {
+        if previousState != .mastered && progress.knowledgeState == .mastered {
             sessionResult.promotedToKnown += 1
         }
 

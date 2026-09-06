@@ -23,9 +23,9 @@ final class ProfileViewModel {
         let kanjiProgress = allProgress.filter { $0.itemType == kanjiType }
         let grammarProgress = allProgress.filter { $0.itemType == grammarType }
 
-        totalKnownWords = vocabProgress.filter { $0.knowledgeState == .known }.count
+        totalKnownWords = vocabProgress.filter { $0.knowledgeState == .mastered || $0.knowledgeState == .developing }.count
         totalLearningWords = vocabProgress.filter { $0.knowledgeState == .learning }.count
-        totalKnownKanji = kanjiProgress.filter { $0.knowledgeState == .known }.count
+        totalKnownKanji = kanjiProgress.filter { $0.knowledgeState == .mastered || $0.knowledgeState == .developing }.count
         totalLearningKanji = kanjiProgress.filter { $0.knowledgeState == .learning }.count
         totalGrammarStudied = grammarProgress.count
 
@@ -36,7 +36,7 @@ final class ProfileViewModel {
         var breakdown: [Int: (known: Int, learning: Int, total: Int)] = [:]
         for level in 1...5 {
             let levelVocab = allVocab.filter { $0.jlptLevel == level }
-            let known = levelVocab.filter { progressByID[$0.word]?.knowledgeState == .known }.count
+            let known = levelVocab.filter { progressByID[$0.word]?.knowledgeState == .mastered || progressByID[$0.word]?.knowledgeState == .developing }.count
             let learning = levelVocab.filter { progressByID[$0.word]?.knowledgeState == .learning }.count
             breakdown[level] = (known: known, learning: learning, total: levelVocab.count)
         }

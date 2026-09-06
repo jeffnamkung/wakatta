@@ -81,10 +81,11 @@ struct WordDetailView: View {
                     Text("Your Progress")
                         .font(.headline)
 
-                    HStack(spacing: 12) {
-                        stateButton(.unknown, label: "New")
-                        stateButton(.learning, label: "Learning")
-                        stateButton(.known, label: "Known")
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        stateButton(.neverLearned)
+                        stateButton(.learning)
+                        stateButton(.developing)
+                        stateButton(.mastered)
                     }
                 }
                 .padding(.horizontal)
@@ -120,29 +121,21 @@ struct WordDetailView: View {
         }
     }
 
-    private func stateButton(_ state: KnowledgeState, label: String) -> some View {
-        let currentState = progress?.knowledgeState ?? .unknown
+    private func stateButton(_ state: KnowledgeState) -> some View {
+        let currentState = progress?.knowledgeState ?? .neverLearned
         let isSelected = currentState == state
 
         return Button {
             updateState(to: state)
         } label: {
-            Text(label)
+            Label(state.shortName, systemImage: state.iconName)
                 .font(.subheadline)
                 .fontWeight(isSelected ? .semibold : .regular)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(isSelected ? stateColor(state) : Color(.systemGray5))
+                .background(isSelected ? state.color : Color(.systemGray5))
                 .foregroundStyle(isSelected ? .white : .primary)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-    }
-
-    private func stateColor(_ state: KnowledgeState) -> Color {
-        switch state {
-        case .unknown: return .gray
-        case .learning: return .orange
-        case .known: return .green
         }
     }
 
@@ -173,6 +166,8 @@ struct WordDetailView: View {
         try? modelContext.save()
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     NavigationStack {

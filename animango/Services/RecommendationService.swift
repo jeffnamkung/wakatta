@@ -31,7 +31,7 @@ struct RecommendationService {
         let allProgress = (try? modelContext.fetch(FetchDescriptor<UserProgress>())) ?? []
         let knownItemIDs = Set(
             allProgress
-                .filter { $0.knowledgeState == .known || $0.knowledgeState == .learning }
+                .filter { $0.knowledgeState == .mastered || $0.knowledgeState == .developing || $0.knowledgeState == .learning }
                 .map(\.itemID)
         )
 

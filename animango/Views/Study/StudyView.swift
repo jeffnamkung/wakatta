@@ -100,6 +100,41 @@ struct StudyView: View {
                     .buttonStyle(.borderedProminent)
                     .padding(.horizontal)
                     .disabled(viewModel.dueItemCount == 0 && libraryMedia.isEmpty)
+
+                    // AI Language Tutor
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("AI Tutor")
+                            .font(.headline)
+
+                        NavigationLink {
+                            ChatTutorView()
+                        } label: {
+                            HStack {
+                                Image(systemName: "brain.head.profile")
+                                    .font(.title3)
+                                    .foregroundStyle(Color.accentColor)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Language Tutor")
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(.primary)
+                                    Text("Chat with AI about Japanese grammar, vocabulary, and more")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(2)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
                 }
                 .padding(.vertical)
             }

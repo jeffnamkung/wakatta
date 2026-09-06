@@ -17,10 +17,12 @@ final class StudyViewModel {
 
         let allVocab = (try? modelContext.fetch(FetchDescriptor<VocabularyItem>())) ?? []
         let allKanji = (try? modelContext.fetch(FetchDescriptor<KanjiItem>())) ?? []
+        let allGrammar = (try? modelContext.fetch(FetchDescriptor<GrammarPoint>())) ?? []
 
         let newVocab = allVocab.filter { !progressedItems.contains($0.word) }.count
         let newKanji = allKanji.filter { !progressedItems.contains($0.character) }.count
+        let newGrammar = allGrammar.filter { !progressedItems.contains($0.pattern) }.count
 
-        dueItemCount += newVocab + newKanji
+        dueItemCount += newVocab + newKanji + newGrammar
     }
 }

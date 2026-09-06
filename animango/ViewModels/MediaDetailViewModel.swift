@@ -9,6 +9,11 @@ final class MediaDetailViewModel {
     var comprehensionPercentage: Double = 0
     var isLoading = false
 
+    // Progress counts per category
+    var vocabProgressCounts: [KnowledgeState: Int] = [:]
+    var kanjiProgressCounts: [KnowledgeState: Int] = [:]
+    var grammarProgressCounts: [KnowledgeState: Int] = [:]
+
     func loadLanguageData(for media: Media, modelContext: ModelContext) {
         let mediaID = media.externalID
 
@@ -45,31 +50,42 @@ final class MediaDetailViewModel {
             grammarPoints = allGrammar.filter { grammarPatterns.contains($0.pattern) }
         }
 
-        // Calculate comprehension
-        calculateComprehension(modelContext: modelContext)
+        // Load progress data
+        loadProgressData(modelContext: modelContext)
     }
 
-    private func calculateComprehension(modelContext: ModelContext) {
-        let allItems = vocabularyItems.map(\.word)
-        guard !allItems.isEmpty else {
-            comprehensionPercentage = 0
-            return
-        }
-
+    private func loadProgressData(modelContext: ModelContext) {
         let progressRecords = (try? modelContext.fetch(FetchDescriptor<UserProgress>())) ?? []
-        let progressByID = Dictionary(grouping: progressRecords, by: \.itemID)
+        let progressByID = Dictionary(uniqueKeysWithValues: progressRecords.map { ($0.itemID, $0) })
 
+        // Compute per-category progress counts
+        vocabProgressCounts = countStates(items: vocabularyItems.map(\.word), progressByID: progressByID)
+        kanjiProgressCounts = countStates(items: kanjiItems.map(\.character), progressByID: progressByID)
+        grammarProgressCounts = countStates(items: grammarPoints.map(\.pattern), progressByID: progressByID)
+
+        // Calculate comprehension
         var totalWeight = 0.0
         var weightedScore = 0.0
 
         for vocab in vocabularyItems {
-            let weight = 1.0
-            totalWeight += weight
-            if let progress = progressByID[vocab.word]?.first {
-                weightedScore += progress.knowledgeState.comprehensionWeight * weight
+            totalWeight += 1.0
+            if let progress = progressByID[vocab.word] {
+                weightedScore += progress.knowledgeState.comprehensionWeight
             }
         }
 
         comprehensionPercentage = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0
+    }
+
+    private func countStates(items: [String], progressByID: [String: UserProgress]) -> [KnowledgeState: Int] {
+        var counts: [KnowledgeState: Int] = [:]
+        for state in KnowledgeState.allCases {
+            counts[state] = 0
+        }
+        for itemID in items {
+            let state = progressByID[itemID]?.knowledgeState ?? .neverLearned
+            counts[state, default: 0] += 1
+        }
+        return counts
     }
 }

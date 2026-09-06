@@ -15,7 +15,7 @@ final class UserProgress {
     init(
         itemID: String,
         itemType: StudyItemType,
-        knowledgeState: KnowledgeState = .unknown,
+        knowledgeState: KnowledgeState = .neverLearned,
         nextReviewDate: Date? = nil,
         easeFactor: Double = 2.5,
         interval: Int = 0,

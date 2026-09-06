@@ -3,7 +3,9 @@ import SwiftData
 
 struct GrammarDetailView: View {
     let grammar: GrammarPoint
+    @Environment(\.modelContext) private var modelContext
     @State private var showFurigana = false
+    @State private var progress: UserProgress?
 
     var body: some View {
         ScrollView {
@@ -35,6 +37,19 @@ struct GrammarDetailView: View {
                         .font(.headline)
                     Text(grammar.explanation)
                         .font(.body)
+                }
+
+                // Knowledge state
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Your Progress")
+                        .font(.headline)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        stateButton(.neverLearned)
+                        stateButton(.learning)
+                        stateButton(.developing)
+                        stateButton(.mastered)
+                    }
                 }
 
                 // Examples
@@ -86,6 +101,54 @@ struct GrammarDetailView: View {
         }
         .navigationTitle("Grammar")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            loadProgress()
+        }
+    }
+
+    private func stateButton(_ state: KnowledgeState) -> some View {
+        let currentState = progress?.knowledgeState ?? .neverLearned
+        let isSelected = currentState == state
+
+        return Button {
+            updateState(to: state)
+        } label: {
+            Label(state.shortName, systemImage: state.iconName)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(isSelected ? state.color : Color(.systemGray5))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    private func loadProgress() {
+        let pattern = grammar.pattern
+        let type = StudyItemType.grammar
+        let predicate = #Predicate<UserProgress> {
+            $0.itemID == pattern && $0.itemType == type
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        progress = try? modelContext.fetch(descriptor).first
+    }
+
+    private func updateState(to state: KnowledgeState) {
+        if let existing = progress {
+            existing.knowledgeState = state
+            existing.lastReviewedDate = Date()
+        } else {
+            let newProgress = UserProgress(
+                itemID: grammar.pattern,
+                itemType: .grammar,
+                knowledgeState: state
+            )
+            newProgress.lastReviewedDate = Date()
+            modelContext.insert(newProgress)
+            progress = newProgress
+        }
+        try? modelContext.save()
     }
 }
 
@@ -111,4 +174,5 @@ struct GrammarDetailView: View {
             )
         )
     }
+    .modelContainer(for: [UserProgress.self], inMemory: true)
 }

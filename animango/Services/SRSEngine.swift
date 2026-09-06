@@ -53,9 +53,11 @@ struct SRSEngine {
                 newInterval = Int(Double(newInterval) * 1.3)
             }
 
-            // Determine knowledge state based on repetition count
-            if newRepetitions >= 4 {
-                newState = .known
+            // Determine knowledge state based on repetition count and performance
+            if newRepetitions >= 6 && newEaseFactor >= 2.0 {
+                newState = .mastered
+            } else if newRepetitions >= 3 {
+                newState = .developing
             } else {
                 newState = .learning
             }
@@ -80,7 +82,7 @@ struct SRSEngine {
         let now = Date()
         return progress.filter { item in
             guard let nextReview = item.nextReviewDate else {
-                return item.knowledgeState != .known
+                return item.knowledgeState != .mastered
             }
             return nextReview <= now
         }

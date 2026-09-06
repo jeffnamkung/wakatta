@@ -12,6 +12,10 @@ enum Config {
         Bundle.main.infoDictionary?["TMDB_API_TOKEN"] as? String ?? ""
     }
 
+    // MARK: - Animango Backend API
+    // Update this URL with your EC2 Elastic IP or domain after deploying
+    static let animangoAPIBaseURL = "http://44.210.75.181/api/v1"
+
     // MARK: - IGDB API
     static let igdbBaseURL = "https://api.igdb.com/v4"
     static let twitchTokenURL = "https://id.twitch.tv/oauth2/token"

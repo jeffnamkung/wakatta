@@ -20,6 +20,7 @@ extension Color {
         case .manga: return .pink
         case .game: return .blue
         case .jdrama: return .orange
+        case .movie: return .indigo
         }
     }
 }

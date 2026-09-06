@@ -5,6 +5,7 @@ enum MediaType: String, Codable, CaseIterable, Identifiable {
     case manga
     case game
     case jdrama
+    case movie
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum MediaType: String, Codable, CaseIterable, Identifiable {
         case .manga: return "Manga"
         case .game: return "Games"
         case .jdrama: return "JDrama"
+        case .movie: return "Movies"
         }
     }
 
@@ -23,6 +25,7 @@ enum MediaType: String, Codable, CaseIterable, Identifiable {
         case .manga: return "book.closed"
         case .game: return "gamecontroller"
         case .jdrama: return "tv"
+        case .movie: return "film"
         }
     }
 }

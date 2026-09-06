@@ -32,7 +32,11 @@ struct DiscoverView: View {
                 .padding(.vertical)
             }
             .navigationTitle("Discover")
-            .searchable(text: $viewModel.searchText, prompt: "Search anime, manga, games, jdrama...")
+            .searchable(
+                text: $viewModel.searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Search anime, manga, movies, games, jdrama..."
+            )
             .onSubmit(of: .search) {
                 viewModel.search()
             }
@@ -94,14 +98,19 @@ struct DiscoverView: View {
                 )
             }
 
+            if !viewModel.popularMovies.isEmpty {
+                RecommendationSection(
+                    title: "Japanese Movies",
+                    media: viewModel.popularMovies
+                )
+            }
+
             if !viewModel.popularDrama.isEmpty {
                 RecommendationSection(
                     title: "Popular JDrama",
                     media: viewModel.popularDrama
                 )
             }
-
-
         }
     }
 }

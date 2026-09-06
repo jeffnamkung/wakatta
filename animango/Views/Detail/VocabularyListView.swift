@@ -10,10 +10,10 @@ struct VocabularyListView: View {
         List {
             // Summary stats
             Section {
-                HStack(spacing: 16) {
-                    statPill(count: viewModel.knownCount, label: "Known", color: .green)
-                    statPill(count: viewModel.learningCount, label: "Learning", color: .orange)
-                    statPill(count: viewModel.unknownCount, label: "New", color: .gray)
+                HStack(spacing: 8) {
+                    ForEach(KnowledgeState.allCases, id: \.self) { state in
+                        statPill(count: viewModel.count(for: state), label: state.shortName, color: state.color)
+                    }
                 }
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
@@ -24,9 +24,9 @@ struct VocabularyListView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         filterButton(title: "All", state: nil)
-                        filterButton(title: "Known", state: .known)
-                        filterButton(title: "Learning", state: .learning)
-                        filterButton(title: "New", state: .unknown)
+                        ForEach(KnowledgeState.allCases, id: \.self) { state in
+                            filterButton(title: state.shortName, state: state)
+                        }
                     }
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))

@@ -15,7 +15,14 @@ struct animangoApp: App {
             UserProgress.self,
             MediaVocabulary.self,
             MediaKanji.self,
-            MediaGrammar.self
+            MediaGrammar.self,
+            Episode.self,
+            EpisodeVocabulary.self,
+            EpisodeKanji.self,
+            EpisodeGrammar.self,
+            Lesson.self,
+            LessonExercise.self,
+            LLMConfiguration.self
         ])
     }
 }

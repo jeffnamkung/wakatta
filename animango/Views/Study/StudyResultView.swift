@@ -38,7 +38,7 @@ struct StudyResultView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.up.circle.fill")
                             .foregroundStyle(.green)
-                        Text("\(result.promotedToKnown) items promoted to Known")
+                        Text("\(result.promotedToKnown) items promoted to Mastered")
                             .font(.subheadline)
                     }
                     .padding(.top, 8)
