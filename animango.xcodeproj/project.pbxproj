@@ -399,7 +399,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HU3934SYKA;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = animango/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Animango needs microphone access to evaluate your Japanese pronunciation.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Animango uses speech recognition to evaluate your Japanese pronunciation practice.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -433,7 +435,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HU3934SYKA;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = animango/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Animango needs microphone access to evaluate your Japanese pronunciation practice.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Animango uses speech recognition to evaluate your Japanese pronunciation practice.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

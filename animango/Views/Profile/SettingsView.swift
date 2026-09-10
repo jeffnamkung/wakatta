@@ -40,6 +40,14 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Server") {
+                NavigationLink {
+                    PipelineMonitorView()
+                } label: {
+                    Label("Pipeline Monitor", systemImage: "server.rack")
+                }
+            }
+
             Section("About") {
                 HStack {
                     Text("Version")
@@ -50,7 +58,7 @@ struct SettingsView: View {
                 HStack {
                     Text("App")
                     Spacer()
-                    Text("animango")
+                    Text("Wakatta")
                         .foregroundStyle(.secondary)
                 }
             }

@@ -112,6 +112,118 @@ actor AnimangoAPIService {
         let status: String
     }
 
+    // MARK: - Available Content DTOs
+
+    struct AvailableMediaItemDTO: Decodable {
+        let mediaId: String
+        let mediaType: String
+        let title: String
+        let titleJapanese: String?
+        let malId: Int?
+        let tmdbId: Int?
+        let totalEpisodes: Int?
+        let processedEpisodes: Int
+        let imageUrl: String?
+
+        enum CodingKeys: String, CodingKey {
+            case title
+            case mediaId = "media_id"
+            case mediaType = "media_type"
+            case titleJapanese = "title_japanese"
+            case malId = "mal_id"
+            case tmdbId = "tmdb_id"
+            case totalEpisodes = "total_episodes"
+            case processedEpisodes = "processed_episodes"
+            case imageUrl = "image_url"
+        }
+    }
+
+    struct AvailableMediaResponseDTO: Decodable {
+        let items: [AvailableMediaItemDTO]
+        let total: Int
+    }
+
+    // MARK: - Pipeline DTOs
+
+    struct PipelineHealthDTO: Decodable {
+        let schedulerRunning: Bool
+        let trackedMediaCount: Int
+        let pendingJobs: Int
+        let completedJobs: Int
+        let failedJobs: Int
+
+        enum CodingKeys: String, CodingKey {
+            case schedulerRunning = "scheduler_running"
+            case trackedMediaCount = "tracked_media_count"
+            case pendingJobs = "pending_jobs"
+            case completedJobs = "completed_jobs"
+            case failedJobs = "failed_jobs"
+        }
+    }
+
+    struct TrackedMediaDTO: Decodable {
+        let id: Int
+        let mediaId: String
+        let mediaType: String
+        let title: String
+        let titleJapanese: String?
+        let totalEpisodes: Int?
+        let airedEpisodes: Int
+        let status: String?
+        let isActive: Bool
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, title, status
+            case mediaId = "media_id"
+            case mediaType = "media_type"
+            case titleJapanese = "title_japanese"
+            case totalEpisodes = "total_episodes"
+            case airedEpisodes = "aired_episodes"
+            case isActive = "is_active"
+            case createdAt = "created_at"
+        }
+    }
+
+    struct TrackedMediaListDTO: Decodable {
+        let items: [TrackedMediaDTO]
+        let total: Int
+    }
+
+    struct ContentJobDTO: Decodable {
+        let id: Int
+        let mediaId: String
+        let episodeNumber: Int
+        let status: String
+        let source: String?
+        let attempts: Int
+        let maxAttempts: Int
+        let lastError: String?
+        let createdAt: String
+        let startedAt: String?
+        let completedAt: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id, status, source, attempts
+            case mediaId = "media_id"
+            case episodeNumber = "episode_number"
+            case maxAttempts = "max_attempts"
+            case lastError = "last_error"
+            case createdAt = "created_at"
+            case startedAt = "started_at"
+            case completedAt = "completed_at"
+        }
+    }
+
+    struct ContentJobListDTO: Decodable {
+        let items: [ContentJobDTO]
+        let total: Int
+    }
+
+    struct TriggerResponseDTO: Decodable {
+        let message: String
+    }
+
     // MARK: - Public API
 
     func fetchEpisodeContent(mediaID: String, episodeNumber: Int) async throws -> EpisodeContentDTO {
@@ -136,5 +248,104 @@ actor AnimangoAPIService {
         } catch {
             return false
         }
+    }
+
+    // MARK: - Available Content API
+
+    func fetchAvailableMedia(mediaType: String? = nil, limit: Int = 50) async throws -> AvailableMediaResponseDTO {
+        var urlString = "\(baseURL)/media/available?limit=\(limit)"
+        if let mediaType {
+            urlString += "&media_type=\(mediaType)"
+        }
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        return try await client.fetch(url)
+    }
+
+    // MARK: - Content Request DTOs
+
+    struct ContentRequestResponseDTO: Decodable {
+        let status: String
+        let message: String
+        let mediaId: String?
+        let processedEpisodes: Int
+        let pendingEpisodes: Int
+
+        enum CodingKeys: String, CodingKey {
+            case status, message
+            case mediaId = "media_id"
+            case processedEpisodes = "processed_episodes"
+            case pendingEpisodes = "pending_episodes"
+        }
+    }
+
+    // MARK: - Content Request API
+
+    func requestContent(malId: Int, mediaType: String = "anime") async throws -> ContentRequestResponseDTO {
+        guard let url = URL(string: "\(baseURL)/media/request") else {
+            throw APIError.invalidURL
+        }
+        let body: [String: Any] = [
+            "mal_id": malId,
+            "media_type": mediaType,
+        ]
+        let data = try JSONSerialization.data(withJSONObject: body)
+        return try await client.post(url, body: data, headers: ["Content-Type": "application/json"])
+    }
+
+    // MARK: - Pipeline API
+
+    func fetchPipelineHealth() async throws -> PipelineHealthDTO {
+        guard let url = URL(string: "\(baseURL)/pipeline/health") else {
+            throw APIError.invalidURL
+        }
+        return try await client.fetch(url)
+    }
+
+    func fetchTrackedMedia(mediaType: String? = nil, limit: Int = 50) async throws -> TrackedMediaListDTO {
+        var urlString = "\(baseURL)/pipeline/tracked?limit=\(limit)"
+        if let mediaType {
+            urlString += "&media_type=\(mediaType)"
+        }
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        return try await client.fetch(url)
+    }
+
+    func fetchJobs(status: String? = nil, mediaId: String? = nil, limit: Int = 50) async throws -> ContentJobListDTO {
+        var urlString = "\(baseURL)/pipeline/jobs?limit=\(limit)"
+        if let status {
+            urlString += "&status=\(status)"
+        }
+        if let mediaId {
+            urlString += "&media_id=\(mediaId)"
+        }
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        return try await client.fetch(url)
+    }
+
+    func triggerDiscovery() async throws -> TriggerResponseDTO {
+        guard let url = URL(string: "\(baseURL)/pipeline/trigger/discovery") else {
+            throw APIError.invalidURL
+        }
+        return try await client.post(url, body: nil)
+    }
+
+    func triggerMonitor() async throws -> TriggerResponseDTO {
+        guard let url = URL(string: "\(baseURL)/pipeline/trigger/monitor") else {
+            throw APIError.invalidURL
+        }
+        return try await client.post(url, body: nil)
+    }
+
+    func triggerProcess() async throws -> TriggerResponseDTO {
+        guard let url = URL(string: "\(baseURL)/pipeline/trigger/process") else {
+            throw APIError.invalidURL
+        }
+        return try await client.post(url, body: nil)
     }
 }

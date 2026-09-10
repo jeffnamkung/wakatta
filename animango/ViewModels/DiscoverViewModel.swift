@@ -5,6 +5,7 @@ import SwiftData
 final class DiscoverViewModel {
     var searchText = ""
     var searchResults: [Media] = []
+    var readyToStudy: [Media] = []
     var topAnime: [Media] = []
     var topManga: [Media] = []
     var popularMovies: [Media] = []
@@ -15,6 +16,7 @@ final class DiscoverViewModel {
     var errorMessage: String?
 
     private let searchService = MediaSearchService()
+    private let apiService = AnimangoAPIService()
     private var searchTask: Task<Void, Never>?
 
     var filteredResults: [Media] {
@@ -41,6 +43,8 @@ final class DiscoverViewModel {
         popularMovies = await movies
         popularDrama = await drama
 
+        await loadAvailableContent()
+
         // Use fallback data when APIs are unavailable
         if topAnime.isEmpty {
             topAnime = Self.fallbackAnime
@@ -57,7 +61,34 @@ final class DiscoverViewModel {
         isLoading = false
     }
 
+    private func loadAvailableContent() async {
+        do {
+            let response = try await apiService.fetchAvailableMedia()
+            readyToStudy = response.items.map { item in
+                let mediaType: MediaType
+                switch item.mediaType {
+                case "anime": mediaType = .anime
+                case "drama": mediaType = .jdrama
+                case "movie": mediaType = .movie
+                default: mediaType = .anime
+                }
+
+                return Media(
+                    externalID: item.mediaId,
+                    mediaType: mediaType,
+                    title: item.title,
+                    titleJapanese: item.titleJapanese,
+                    episodeCount: item.totalEpisodes,
+                    status: "\(item.processedEpisodes) episodes ready"
+                )
+            }
+        } catch {
+            // Silently fail — the section just won't show
+        }
+    }
+
     func retryLoading() async {
+        readyToStudy = []
         topAnime = []
         topManga = []
         popularMovies = []

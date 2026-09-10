@@ -18,6 +18,10 @@ struct ContentView: View {
                 StudyView()
             }
 
+            Tab("Chat", systemImage: "bubble.left.and.bubble.right") {
+                ChatConversationListView()
+            }
+
             Tab("Profile", systemImage: "person.crop.circle") {
                 ProfileView()
             }
@@ -44,6 +48,8 @@ struct ContentView: View {
             EpisodeKanji.self,
             EpisodeGrammar.self,
             Lesson.self,
-            LessonExercise.self
+            LessonExercise.self,
+            ChatConversation.self,
+            ChatMessageData.self
         ], inMemory: true)
 }

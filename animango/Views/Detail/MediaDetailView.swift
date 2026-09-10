@@ -240,10 +240,73 @@ struct MediaDetailView: View {
             }
 
             if detailViewModel.vocabularyItems.isEmpty && detailViewModel.kanjiItems.isEmpty && detailViewModel.grammarPoints.isEmpty {
-                Text("Add this to your library to start learning the vocabulary and kanji needed to understand this title.")
+                contentRequestSection
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var contentRequestSection: some View {
+        VStack(spacing: 12) {
+            if let message = detailViewModel.contentRequestMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: statusIcon(for: detailViewModel.contentRequestStatus))
+                        .foregroundStyle(statusColor(for: detailViewModel.contentRequestStatus))
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(statusColor(for: detailViewModel.contentRequestStatus).opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                Text("No language data available yet for this title.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            if media.mediaType == .anime && detailViewModel.contentRequestStatus != "queued" && detailViewModel.contentRequestStatus != "already_available" {
+                Button {
+                    Task {
+                        await detailViewModel.requestContent(for: media)
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        if detailViewModel.isRequestingContent {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "arrow.down.circle")
+                        }
+                        Text("Request Content Processing")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.orange)
+                .disabled(detailViewModel.isRequestingContent)
+            }
+        }
+    }
+
+    private func statusIcon(for status: String?) -> String {
+        switch status {
+        case "queued": "clock.fill"
+        case "already_available": "checkmark.circle.fill"
+        case "tracking_added": "antenna.radiowaves.left.and.right"
+        case "error": "exclamationmark.triangle.fill"
+        default: "info.circle"
+        }
+    }
+
+    private func statusColor(for status: String?) -> Color {
+        switch status {
+        case "queued": .orange
+        case "already_available": .green
+        case "tracking_added": .blue
+        case "error": .red
+        default: .secondary
         }
     }
 

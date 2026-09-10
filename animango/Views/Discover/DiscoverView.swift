@@ -84,6 +84,10 @@ struct DiscoverView: View {
             LoadingView()
                 .frame(height: 300)
         } else {
+            if !viewModel.readyToStudy.isEmpty {
+                ReadyToStudySection(media: viewModel.readyToStudy)
+            }
+
             if !viewModel.topAnime.isEmpty {
                 RecommendationSection(
                     title: "Popular Anime",

@@ -53,7 +53,7 @@ final class ChatTutorViewModel {
         errorMessage = nil
 
         let systemPrompt = """
-        You are a friendly Japanese language tutor in a mobile learning app called animango. \
+        You are a friendly Japanese language tutor in a mobile learning app called Perapera. \
         Help the user learn Japanese through anime, manga, drama, and movie contexts. \
         Keep responses concise (2-4 paragraphs max) since this is a mobile chat interface. \
         Always include Japanese text with readings in parentheses, e.g. 食べる（たべる）. \

@@ -14,6 +14,11 @@ final class MediaDetailViewModel {
     var kanjiProgressCounts: [KnowledgeState: Int] = [:]
     var grammarProgressCounts: [KnowledgeState: Int] = [:]
 
+    // Content request state
+    var isRequestingContent = false
+    var contentRequestMessage: String?
+    var contentRequestStatus: String?
+
     func loadLanguageData(for media: Media, modelContext: ModelContext) {
         let mediaID = media.externalID
 
@@ -75,6 +80,32 @@ final class MediaDetailViewModel {
         }
 
         comprehensionPercentage = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0
+    }
+
+    func requestContent(for media: Media) async {
+        // Extract MAL ID from externalID (e.g. "anime_16498" → 16498)
+        guard media.mediaType == .anime,
+              let malIdString = media.externalID.split(separator: "_").last,
+              let malId = Int(malIdString) else {
+            contentRequestMessage = "Content requests are currently only supported for anime."
+            contentRequestStatus = "error"
+            return
+        }
+
+        isRequestingContent = true
+        contentRequestMessage = nil
+        contentRequestStatus = nil
+
+        let apiService = AnimangoAPIService()
+        do {
+            let response = try await apiService.requestContent(malId: malId)
+            contentRequestMessage = response.message
+            contentRequestStatus = response.status
+        } catch {
+            contentRequestMessage = "Failed to send request. Please try again later."
+            contentRequestStatus = "error"
+        }
+        isRequestingContent = false
     }
 
     private func countStates(items: [String], progressByID: [String: UserProgress]) -> [KnowledgeState: Int] {

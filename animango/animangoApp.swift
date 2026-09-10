@@ -22,7 +22,9 @@ struct animangoApp: App {
             EpisodeGrammar.self,
             Lesson.self,
             LessonExercise.self,
-            LLMConfiguration.self
+            LLMConfiguration.self,
+            ChatConversation.self,
+            ChatMessageData.self
         ])
     }
 }
