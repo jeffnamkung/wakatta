@@ -177,6 +177,8 @@ struct SettingsView: View {
                 Text("Uses Claude by Anthropic. Get your API key at console.anthropic.com.")
             case .openAI:
                 Text("Uses ChatGPT by OpenAI. Get your API key at platform.openai.com.")
+            case .gemini:
+                Text("Uses Gemini by Google. Get your API key at aistudio.google.com.")
             }
         }
     }
@@ -225,6 +227,8 @@ struct SettingsView: View {
             provider = AnthropicProvider(apiKey: apiKey, model: selectedModel)
         case .openAI:
             provider = OpenAIProvider(apiKey: apiKey, model: selectedModel)
+        case .gemini:
+            provider = GeminiProvider(apiKey: apiKey, model: selectedModel)
         case .apple:
             isTesting = false
             return

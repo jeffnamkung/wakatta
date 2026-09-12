@@ -80,6 +80,10 @@ struct ChatSetupWizardView: View {
                     provider: .openAI,
                     subtitle: "GPT-4o and GPT-4.1"
                 )
+                providerButton(
+                    provider: .gemini,
+                    subtitle: "Gemini 2.5 Flash and Pro"
+                )
             }
             .padding(.horizontal, 24)
 
@@ -157,11 +161,9 @@ struct ChatSetupWizardView: View {
 
                 // Step-by-step instructions
                 VStack(alignment: .leading, spacing: 16) {
-                    instructionRow(number: 1, text: "Tap the button below to open \(selectedProvider == .anthropic ? "Anthropic Console" : "OpenAI Platform") in Safari")
+                    instructionRow(number: 1, text: "Tap the button below to open \(consoleName) in Safari")
                     instructionRow(number: 2, text: "Create a free account (or sign in)")
-                    instructionRow(number: 3, text: selectedProvider == .anthropic
-                                   ? "Go to **API Keys** → **Create Key**"
-                                   : "Go to **API keys** → **Create new secret key**")
+                    instructionRow(number: 3, text: apiKeyInstruction)
                     instructionRow(number: 4, text: "Copy the key and paste it below")
                 }
                 .padding(.horizontal, 24)
@@ -171,9 +173,7 @@ struct ChatSetupWizardView: View {
                     openConsole()
                 } label: {
                     Label(
-                        selectedProvider == .anthropic
-                            ? "Open Anthropic Console"
-                            : "Open OpenAI Platform",
+                        "Open \(consoleName)",
                         systemImage: "safari"
                     )
                     .fontWeight(.medium)
@@ -327,10 +327,32 @@ struct ChatSetupWizardView: View {
 
     // MARK: - Actions
 
+    private var consoleName: String {
+        switch selectedProvider {
+        case .anthropic: return "Anthropic Console"
+        case .openAI: return "OpenAI Platform"
+        case .gemini: return "Google AI Studio"
+        case .apple: return ""
+        }
+    }
+
+    private var apiKeyInstruction: String {
+        switch selectedProvider {
+        case .anthropic: return "Go to **API Keys** → **Create Key**"
+        case .openAI: return "Go to **API keys** → **Create new secret key**"
+        case .gemini: return "Go to **Get API key** → **Create API key**"
+        case .apple: return ""
+        }
+    }
+
     private func openConsole() {
-        let urlString = selectedProvider == .anthropic
-            ? "https://console.anthropic.com/settings/keys"
-            : "https://platform.openai.com/api-keys"
+        let urlString: String
+        switch selectedProvider {
+        case .anthropic: urlString = "https://console.anthropic.com/settings/keys"
+        case .openAI: urlString = "https://platform.openai.com/api-keys"
+        case .gemini: urlString = "https://aistudio.google.com/apikey"
+        case .apple: return
+        }
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url)
         }
@@ -348,6 +370,8 @@ struct ChatSetupWizardView: View {
             provider = AnthropicProvider(apiKey: trimmedKey, model: selectedModel)
         case .openAI:
             provider = OpenAIProvider(apiKey: trimmedKey, model: selectedModel)
+        case .gemini:
+            provider = GeminiProvider(apiKey: trimmedKey, model: selectedModel)
         case .apple:
             isTesting = false
             return

@@ -90,6 +90,11 @@ final class LLMServiceManager {
                 apiKey: config.apiKey,
                 model: config.selectedModel
             )
+        case .gemini:
+            provider = GeminiProvider(
+                apiKey: config.apiKey,
+                model: config.selectedModel
+            )
         }
     }
 }

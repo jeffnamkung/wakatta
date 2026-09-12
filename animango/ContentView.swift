@@ -22,6 +22,10 @@ struct ContentView: View {
                 ChatConversationListView()
             }
 
+            Tab("Translate", systemImage: "waveform.and.mic") {
+                LiveTranslationView()
+            }
+
             Tab("Profile", systemImage: "person.crop.circle") {
                 ProfileView()
             }
