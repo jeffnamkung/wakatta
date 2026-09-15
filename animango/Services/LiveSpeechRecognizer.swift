@@ -29,6 +29,8 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private var currentLocale: Locale?
+    private var isRestarting = false
+    private var hasTapInstalled = false
 
     // MARK: - Authorization
 
@@ -69,6 +71,9 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     // MARK: - Listening
 
     func startListening(locale: Locale) throws {
+        // Prevent re-entrant calls during restart
+        guard !isRestarting else { return }
+
         // Create or recreate recognizer if locale changed
         if currentLocale != locale || speechRecognizer == nil {
             speechRecognizer = SFSpeechRecognizer(locale: locale)
@@ -85,12 +90,18 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         recognitionTask?.cancel()
         recognitionTask = nil
 
+        // Clean up any existing audio tap before installing a new one
+        cleanupAudioEngine()
+
         partialText = ""
         state = .listening
 
-        // Configure audio session
+        // Configure audio session — use .playAndRecord so other audio (PiP video,
+        // music, etc.) continues playing while the mic captures it for transcription.
+        // .defaultToSpeaker routes playback to speaker so the mic can pick it up.
+        // .mixWithOthers prevents interrupting other apps' audio sessions.
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+        try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetooth])
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
         // Create recognition request
@@ -105,12 +116,18 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
 
+        guard recordingFormat.sampleRate > 0 else {
+            state = .error("Audio input format is not available.")
+            return
+        }
+
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
 
             // Calculate audio level for waveform
             guard let channelData = buffer.floatChannelData?[0] else { return }
             let frameLength = Int(buffer.frameLength)
+            guard frameLength > 0 else { return }
             var sum: Float = 0
             for i in 0..<frameLength {
                 sum += abs(channelData[i])
@@ -122,6 +139,7 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                 self?.audioLevel = level
             }
         }
+        hasTapInstalled = true
 
         // Start audio engine
         audioEngine.prepare()
@@ -147,14 +165,25 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
 
                 if let error = error {
                     let nsError = error as NSError
-                    // Don't treat cancellation as an error
-                    if nsError.domain != "kAFAssistantErrorDomain" || nsError.code != 216 {
-                        // If we have partial text, emit it as a final segment
+                    // Don't treat cancellation or "no speech detected" as fatal errors
+                    let ignorableCodes = [216, 209, 203, 1110]
+                    if nsError.domain == "kAFAssistantErrorDomain" && ignorableCodes.contains(nsError.code) {
+                        // Emit any partial text before restarting
                         if !self.partialText.isEmpty {
                             self.onFinalSegment?(self.partialText)
                             self.partialText = ""
                         }
-                        // Restart for continuous listening (speech recognizer times out naturally)
+                        // Restart for continuous listening
+                        if self.state == .listening {
+                            self.restartRecognition()
+                        }
+                    } else {
+                        // Emit any partial text
+                        if !self.partialText.isEmpty {
+                            self.onFinalSegment?(self.partialText)
+                            self.partialText = ""
+                        }
+                        // Restart for continuous listening
                         if self.state == .listening {
                             self.restartRecognition()
                         }
@@ -166,16 +195,23 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
 
     func stopListening() {
         state = .idle
+        isRestarting = false
         recognitionTask?.cancel()
         recognitionTask = nil
-        stopAudioEngine()
+        cleanupAudioEngine()
     }
 
     // MARK: - Private Helpers
 
-    private func stopAudioEngine() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+    /// Safely tears down the audio engine and removes the tap
+    private func cleanupAudioEngine() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        if hasTapInstalled {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            hasTapInstalled = false
+        }
         recognitionRequest?.endAudio()
         recognitionRequest = nil
         audioLevel = 0
@@ -183,14 +219,19 @@ final class LiveSpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
 
     /// Restart recognition to enable continuous listening (SFSpeechRecognizer has a ~60s limit per task)
     private func restartRecognition() {
-        guard state == .listening, let locale = currentLocale else { return }
+        guard state == .listening, let locale = currentLocale, !isRestarting else { return }
 
-        stopAudioEngine()
+        isRestarting = true
+        cleanupAudioEngine()
 
         // Small delay before restarting to let the audio session settle
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(100))
-            guard self.state == .listening else { return }
+            try? await Task.sleep(for: .milliseconds(200))
+            guard self.state == .listening else {
+                self.isRestarting = false
+                return
+            }
+            self.isRestarting = false
             do {
                 try self.startListening(locale: locale)
             } catch {

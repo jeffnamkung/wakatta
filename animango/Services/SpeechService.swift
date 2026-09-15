@@ -18,7 +18,7 @@ final class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
 
     // MARK: - Basic TTS
 
-    func speak(_ text: String, rate: Float = 0.4) {
+    func speak(_ text: String, rate: Float = 0.4, language: String = "ja-JP") {
         stopSpatialEngine()
 
         if synthesizer.isSpeaking {
@@ -26,15 +26,15 @@ final class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
         }
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+        utterance.voice = AVSpeechSynthesisVoice(language: language)
         utterance.rate = rate
         utterance.pitchMultiplier = 1.0
         isSpeaking = true
         synthesizer.speak(utterance)
     }
 
-    func speakSlowly(_ text: String) {
-        speak(text, rate: 0.25)
+    func speakSlowly(_ text: String, language: String = "ja-JP") {
+        speak(text, rate: 0.25, language: language)
     }
 
     func stop() {
@@ -87,10 +87,10 @@ final class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
     }
 
     /// Speaks text using spatial audio at a given 3D position
-    func speakSpatial(_ text: String, position: AVAudio3DPoint = AVAudio3DPoint(x: 0, y: 0, z: -1), rate: Float = 0.4) {
+    func speakSpatial(_ text: String, position: AVAudio3DPoint = AVAudio3DPoint(x: 0, y: 0, z: -1), rate: Float = 0.4, language: String = "ja-JP") {
         guard let engine = engine, let playerNode = playerNode else {
             // Fall back to regular speech if spatial isn't set up
-            speak(text, rate: rate)
+            speak(text, rate: rate, language: language)
             return
         }
 
@@ -112,7 +112,7 @@ final class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
 
         // Create utterance for buffer generation
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+        utterance.voice = AVSpeechSynthesisVoice(language: language)
         utterance.rate = rate
         utterance.pitchMultiplier = 1.0
 

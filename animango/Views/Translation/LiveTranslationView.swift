@@ -4,6 +4,9 @@ import SwiftData
 struct LiveTranslationView: View {
     @State private var viewModel = LiveTranslationViewModel()
     @Environment(\.modelContext) private var modelContext
+    @State private var showLanguagePicker = false
+    @State private var manualInputText = ""
+    @FocusState private var isManualInputFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -18,18 +21,26 @@ struct LiveTranslationView: View {
 
                     Divider()
 
-                    // Split: transcription + translation
+                    // Split: transcription + translation(s)
                     GeometryReader { geo in
+                        let transcriptionHeight = geo.size.height * 0.35
+                        let translationHeight = geo.size.height * 0.65
+
                         VStack(spacing: 0) {
                             transcriptionPanel
-                                .frame(height: geo.size.height / 2)
+                                .frame(height: transcriptionHeight)
 
                             Divider()
 
-                            translationPanel
-                                .frame(height: geo.size.height / 2)
+                            translationPanels
+                                .frame(height: translationHeight)
                         }
                     }
+
+                    Divider()
+
+                    // Manual text input for testing without mic
+                    manualInputBar
 
                     Divider()
 
@@ -48,7 +59,7 @@ struct LiveTranslationView: View {
                             Image(systemName: "trash")
                                 .font(.caption)
                         }
-                        .disabled(viewModel.transcriptionSegments.isEmpty && viewModel.translationSegments.isEmpty)
+                        .disabled(viewModel.transcriptionSegments.isEmpty && !viewModel.hasAnyTranslations)
                     }
                 }
             }
@@ -63,6 +74,9 @@ struct LiveTranslationView: View {
                     isLoading: viewModel.isLoadingDefinition
                 )
                 .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showLanguagePicker) {
+                targetLanguagePickerSheet
             }
         }
     }
@@ -81,7 +95,7 @@ struct LiveTranslationView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            Text("Live Translation uses your configured AI provider for translation. Set up Claude, ChatGPT, or Apple Intelligence in Settings.")
+            Text("Live Translation uses your configured AI provider for translation. Set up Claude, ChatGPT, Gemini, or Apple Intelligence in Settings.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -146,6 +160,7 @@ struct LiveTranslationView: View {
 
     private var languageSelectorBar: some View {
         HStack {
+            // Source language
             Menu {
                 ForEach(SupportedLanguage.allCases) { language in
                     Button {
@@ -165,40 +180,63 @@ struct LiveTranslationView: View {
 
             Spacer()
 
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.swapLanguages()
+            // Swap button (only when single target)
+            if viewModel.targetLanguages.count == 1 {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.swapLanguages()
+                    }
+                } label: {
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(8)
+                        .background(.secondary.opacity(0.1))
+                        .clipShape(Circle())
                 }
-            } label: {
-                Image(systemName: "arrow.left.arrow.right")
+            } else {
+                Image(systemName: "arrow.right")
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
                     .padding(8)
-                    .background(.secondary.opacity(0.1))
-                    .clipShape(Circle())
             }
 
             Spacer()
 
-            Menu {
-                ForEach(SupportedLanguage.allCases) { language in
-                    Button {
-                        viewModel.targetLanguage = language
-                    } label: {
-                        HStack {
-                            Text("\(language.flagEmoji) \(language.displayName)")
-                            if language == viewModel.targetLanguage {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
+            // Target languages button
+            Button {
+                showLanguagePicker = true
             } label: {
-                languagePill(viewModel.targetLanguage)
+                targetLanguagesPill
             }
         }
         .padding(.horizontal)
         .padding(.vertical, 10)
+    }
+
+    private var targetLanguagesPill: some View {
+        HStack(spacing: 4) {
+            let targets = viewModel.orderedTargetLanguages
+            if targets.count == 1, let lang = targets.first {
+                Text(lang.flagEmoji)
+                Text(lang.displayName)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            } else {
+                // Show flags for all selected
+                Text(targets.map(\.flagEmoji).joined(separator: ""))
+                Text("\(targets.count) languages")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            Image(systemName: "chevron.down")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(.secondary.opacity(0.1))
+        .clipShape(Capsule())
     }
 
     private func languagePill(_ language: SupportedLanguage) -> some View {
@@ -217,11 +255,105 @@ struct LiveTranslationView: View {
         .clipShape(Capsule())
     }
 
+    // MARK: - Target Language Picker Sheet
+
+    private var targetLanguagePickerSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(SupportedLanguage.allCases) { language in
+                        if language != viewModel.sourceLanguage {
+                            Button {
+                                viewModel.toggleTargetLanguage(language)
+                            } label: {
+                                HStack {
+                                    Text(language.flagEmoji)
+                                    Text(language.displayName)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    if viewModel.targetLanguages.contains(language) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(Color.accentColor)
+                                    } else {
+                                        Image(systemName: "circle")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Select one or more target languages")
+                } footer: {
+                    Text("Translations will run in parallel for all selected languages.")
+                }
+
+                Section("Audio Playback") {
+                    Button {
+                        viewModel.setAudioMode(.off)
+                    } label: {
+                        HStack {
+                            Label("Off", systemImage: "speaker.slash")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            if viewModel.audioPlaybackMode == .off {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                        }
+                    }
+
+                    ForEach(viewModel.orderedTargetLanguages) { language in
+                        Button {
+                            viewModel.setAudioMode(.single(language))
+                        } label: {
+                            HStack {
+                                Label("\(language.flagEmoji) \(language.displayName) only", systemImage: "speaker.wave.2")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if case .single(let selected) = viewModel.audioPlaybackMode, selected == language {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+
+                    if viewModel.targetLanguages.count > 1 {
+                        Button {
+                            viewModel.setAudioMode(.all)
+                        } label: {
+                            HStack {
+                                Label("All languages", systemImage: "speaker.wave.3")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if viewModel.audioPlaybackMode == .all {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Target Languages")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        showLanguagePicker = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
     // MARK: - Transcription Panel
 
     private var transcriptionPanel: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             HStack {
                 Text("Transcription")
                     .font(.caption)
@@ -248,7 +380,7 @@ struct LiveTranslationView: View {
                                     showFurigana: viewModel.showFurigana,
                                     onWordTap: { word in
                                         Task {
-                                            await viewModel.lookupWord(word)
+                                            await viewModel.lookupWord(word, in: viewModel.sourceLanguage)
                                         }
                                     }
                                 )
@@ -258,7 +390,6 @@ struct LiveTranslationView: View {
                             }
                         }
 
-                        // Partial text (live)
                         if !viewModel.currentPartialText.isEmpty {
                             Text(viewModel.currentPartialText)
                                 .font(.body)
@@ -287,68 +418,45 @@ struct LiveTranslationView: View {
         }
     }
 
-    // MARK: - Translation Panel
+    // MARK: - Translation Panels
 
-    private var translationPanel: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack {
-                Text("Translation")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
+    private var translationPanels: some View {
+        let targets = viewModel.orderedTargetLanguages
 
-                Spacer()
-
-                if viewModel.isTranslating {
-                    ProgressView()
-                        .scaleEffect(0.7)
+        return Group {
+            if targets.isEmpty {
+                emptyStateLabel("Select at least one target language")
+            } else if targets.count == 1, let language = targets.first {
+                // Single language — full panel
+                singleTranslationPanel(for: language)
+            } else {
+                // Multiple languages — tabbed or stacked
+                ScrollView(.vertical) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(targets) { language in
+                            VStack(spacing: 0) {
+                                multiTranslationPanel(for: language)
+                                if language != targets.last {
+                                    Divider()
+                                }
+                            }
+                        }
+                    }
                 }
-
-                Text(viewModel.targetLanguage.displayName)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
+        }
+    }
+
+    private func singleTranslationPanel(for language: SupportedLanguage) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            translationPanelHeader(for: language)
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(viewModel.translationSegments) { segment in
-                            if viewModel.targetLanguage.isJapanese {
-                                TappableJapaneseTextView(
-                                    words: segment.words,
-                                    showFurigana: viewModel.showFurigana,
-                                    onWordTap: { word in
-                                        Task {
-                                            await viewModel.lookupWord(word)
-                                        }
-                                    }
-                                )
-                            } else {
-                                Text(segment.translatedText)
-                                    .font(.body)
-                                    .onTapGesture {
-                                        // For non-Japanese, tap the whole segment
-                                        // Split and find which word was tapped — simplified: just show first word
-                                    }
-                            }
-                        }
-
-                        if let error = viewModel.errorMessage {
-                            Text(error)
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                                .id("translationBottom")
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
+                    translationContent(for: language)
                 }
-                .onChange(of: viewModel.translationSegments.count) {
-                    if let last = viewModel.translationSegments.last {
+                .onChange(of: viewModel.translationsByLanguage[language]?.count) {
+                    if let last = viewModel.translationsByLanguage[language]?.last {
                         withAnimation {
                             proxy.scrollTo(last.id, anchor: .bottom)
                         }
@@ -356,9 +464,142 @@ struct LiveTranslationView: View {
                 }
             }
 
-            if viewModel.translationSegments.isEmpty && !viewModel.isTranslating && viewModel.mode == .idle {
+            if (viewModel.translationsByLanguage[language] ?? []).isEmpty && !viewModel.isTranslating && viewModel.mode == .idle {
                 emptyStateLabel("Translations will appear here")
             }
+        }
+    }
+
+    private func multiTranslationPanel(for language: SupportedLanguage) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            translationPanelHeader(for: language)
+
+            let segments = viewModel.translationsByLanguage[language] ?? []
+            if segments.isEmpty && !viewModel.isTranslating {
+                Text("Waiting for speech...")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+            } else {
+                translationContent(for: language)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+
+    private func translationPanelHeader(for language: SupportedLanguage) -> some View {
+        HStack {
+            Text("\(language.flagEmoji) \(language.displayName)")
+                .font(.caption)
+                .fontWeight(.medium)
+
+            Spacer()
+
+            if viewModel.isTranslating {
+                ProgressView()
+                    .scaleEffect(0.7)
+            }
+
+            // Speaker button for this language
+            Button {
+                if viewModel.isSpeakingLanguage == language && viewModel.isSpeaking {
+                    viewModel.stopSpeaking()
+                } else {
+                    viewModel.speakLatestTranslation(for: language)
+                }
+            } label: {
+                Image(systemName: viewModel.isSpeakingLanguage == language && viewModel.isSpeaking
+                      ? "speaker.wave.3.fill" : "speaker.wave.2")
+                    .font(.caption)
+                    .foregroundStyle(viewModel.isSpeakingLanguage == language && viewModel.isSpeaking
+                                     ? Color.accentColor : .secondary)
+            }
+            .disabled((viewModel.translationsByLanguage[language] ?? []).isEmpty)
+
+            // Audio auto-play indicator
+            if case .single(let selected) = viewModel.audioPlaybackMode, selected == language {
+                Image(systemName: "autostartstop")
+                    .font(.caption2)
+                    .foregroundStyle(Color.accentColor)
+            } else if viewModel.audioPlaybackMode == .all {
+                Image(systemName: "autostartstop")
+                    .font(.caption2)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+
+    private func translationContent(for language: SupportedLanguage) -> some View {
+        LazyVStack(alignment: .leading, spacing: 12) {
+            ForEach(viewModel.translationsByLanguage[language] ?? []) { segment in
+                if language.isJapanese {
+                    TappableJapaneseTextView(
+                        words: segment.words,
+                        showFurigana: viewModel.showFurigana,
+                        onWordTap: { word in
+                            Task {
+                                await viewModel.lookupWord(word, in: language)
+                            }
+                        }
+                    )
+                } else {
+                    TappableJapaneseTextView(
+                        words: segment.words,
+                        showFurigana: false,
+                        onWordTap: { word in
+                            Task {
+                                await viewModel.lookupWord(word, in: language)
+                            }
+                        }
+                    )
+                }
+            }
+
+            if let error = viewModel.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Manual Input Bar
+
+    private var manualInputBar: some View {
+        HStack(spacing: 8) {
+            TextField("Type to translate...", text: $manualInputText)
+                .textFieldStyle(.roundedBorder)
+                .font(.subheadline)
+                .focused($isManualInputFocused)
+                .submitLabel(.send)
+                .onSubmit {
+                    sendManualInput()
+                }
+
+            Button {
+                sendManualInput()
+            } label: {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(manualInputText.trimmingCharacters(in: .whitespaces).isEmpty ? .secondary : Color.accentColor)
+            }
+            .disabled(manualInputText.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 6)
+    }
+
+    private func sendManualInput() {
+        let text = manualInputText
+        manualInputText = ""
+        Task {
+            await viewModel.submitText(text)
         }
     }
 
@@ -373,7 +614,7 @@ struct LiveTranslationView: View {
                 }
             } label: {
                 VStack(spacing: 2) {
-                    Image(systemName: viewModel.showFurigana ? "character.ja" : "character.ja")
+                    Image(systemName: "character.ja")
                         .font(.title3)
                         .foregroundStyle(viewModel.showFurigana ? Color.accentColor : .secondary)
                     Text("Furigana")
@@ -405,18 +646,31 @@ struct LiveTranslationView: View {
 
             Spacer()
 
-            // Placeholder for symmetry
-            VStack(spacing: 2) {
-                Image(systemName: "character.ja")
-                    .font(.title3)
-                Text("Furigana")
-                    .font(.system(size: 9))
+            // Audio mode indicator
+            Button {
+                showLanguagePicker = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: audioModeIcon)
+                        .font(.title3)
+                        .foregroundStyle(viewModel.audioPlaybackMode != .off ? Color.accentColor : .secondary)
+                    Text("Audio")
+                        .font(.system(size: 9))
+                        .foregroundStyle(viewModel.audioPlaybackMode != .off ? Color.accentColor : .secondary)
+                }
             }
-            .hidden()
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
         .background(.bar)
+    }
+
+    private var audioModeIcon: String {
+        switch viewModel.audioPlaybackMode {
+        case .off: return "speaker.slash"
+        case .single: return "speaker.wave.2"
+        case .all: return "speaker.wave.3"
+        }
     }
 
     // MARK: - Helpers
