@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>KotoLens Settings</title>
+  <link rel="stylesheet" href="pages.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1><span class="brand">KotoLens</span> settings</h1>
+    <p class="muted">Changes save automatically.</p>
+
+    <section class="card">
+      <h2>Anthropic API key</h2>
+      <p class="muted small">KotoLens uses Claude to translate, add furigana, and explain grammar. Create a key at
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.
+        The key is stored only on this device and sent only to api.anthropic.com. You pay Anthropic directly for usage.</p>
+      <div class="field">
+        <label for="apiKey">API key</label>
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" />
+          <button id="toggleKey" type="button">Show</button>
+          <button id="testKey" type="button">Test</button>
+        </div>
+        <div class="status" id="keyStatus" role="status"></div>
+      </div>
+      <div class="field">
+        <label for="model">Model</label>
+        <select id="model"></select>
+      </div>
+      <div class="field">
+        <label for="effort">Thinking effort</label>
+        <select id="effort">
+          <option value="low">Low: fastest, good for everyday reading</option>
+          <option value="medium">Medium</option>
+          <option value="high">High: slower, most careful</option>
+        </select>
+        <span class="muted small">Ignored for Haiku.</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Reading</h2>
+      <div class="field">
+        <label for="defaultStudyLanguage">When translating English with “Explain in English”, study</label>
+        <select id="defaultStudyLanguage">
+          <option value="ja">Japanese 日本語</option>
+          <option value="ko">Korean 한국어</option>
+        </select>
+      </div>
+      <label class="check"><input type="checkbox" id="showFurigana" /> Show furigana over kanji</label>
+      <label class="check"><input type="checkbox" id="showRomanization" /> Show romanization (rōmaji / Revised Romanization)</label>
+    </section>
+
+    <section class="card">
+      <h2>Pronunciation</h2>
+      <div class="field">
+        <label for="speechRate">Speaking speed <span id="rateLabel" class="muted"></span></label>
+        <input type="range" id="speechRate" min="0.5" max="1.3" step="0.05" />
+      </div>
+      <div class="field">
+        <label for="voice-ja">Japanese voice</label>
+        <div class="row" style="flex-wrap:nowrap"><select id="voice-ja"></select><button data-preview="ja" type="button">▶ Test</button></div>
+      </div>
+      <div class="field">
+        <label for="voice-ko">Korean voice</label>
+        <div class="row" style="flex-wrap:nowrap"><select id="voice-ko"></select><button data-preview="ko" type="button">▶ Test</button></div>
+      </div>
+      <p class="muted small">Voices come from Chrome and your operating system. If none are listed, install a Japanese or Korean voice in your OS speech settings.</p>
+    </section>
+
+    <section class="card">
+      <h2>Privacy</h2>
+      <p class="muted small">When you use KotoLens, the highlighted text, the sentence and paragraph around it, and the page title are sent to Anthropic's API to generate the explanation. Nothing is sent until you choose a KotoLens menu item. Flashcards and settings stay in Chrome storage on your device. KotoLens has no servers and no analytics.</p>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

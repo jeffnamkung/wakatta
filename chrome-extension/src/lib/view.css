@@ -1,0 +1,320 @@
+/* Shared styles for the KotoLens result view. Loaded into a Shadow DOM in pages, and as a <style> in extension pages. */
+.kl-root {
+  --kl-bg: #fffdf9;
+  --kl-surface: #f6f1ea;
+  --kl-fg: #1f1a17;
+  --kl-muted: #6b625b;
+  --kl-border: #e6ddd3;
+  --kl-accent: #c2410c;
+  --kl-accent-fg: #ffffff;
+  --kl-ruby: #9a3412;
+  --kl-good: #15803d;
+  --kl-shadow: 0 12px 32px rgba(40, 20, 10, 0.18), 0 2px 6px rgba(40, 20, 10, 0.08);
+  --kl-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+
+  all: initial;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  font-family: var(--kl-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--kl-fg);
+  background: var(--kl-bg);
+  border: 1px solid var(--kl-border);
+  border-radius: 12px;
+  box-shadow: var(--kl-shadow);
+  overflow: hidden;
+  text-align: left;
+}
+@media (prefers-color-scheme: dark) {
+  .kl-root {
+    --kl-bg: #1c1917;
+    --kl-surface: #292524;
+    --kl-fg: #f5f0eb;
+    --kl-muted: #a8a29e;
+    --kl-border: #3a3431;
+    --kl-accent: #fb923c;
+    --kl-accent-fg: #1c1917;
+    --kl-ruby: #fdba74;
+    --kl-good: #4ade80;
+    --kl-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+.kl-root *,
+.kl-root *::before,
+.kl-root *::after {
+  box-sizing: border-box;
+}
+.kl-root :lang(ja) {
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", var(--kl-font);
+}
+.kl-root :lang(ko) {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", var(--kl-font);
+}
+
+.kl-header,
+.kl-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 8px 14px;
+  background: var(--kl-surface);
+  flex-shrink: 0;
+}
+.kl-header {
+  border-bottom: 1px solid var(--kl-border);
+  cursor: move;
+  user-select: none;
+}
+.kl-footer {
+  border-top: 1px solid var(--kl-border);
+  flex-wrap: wrap;
+}
+.kl-brand {
+  font-weight: 700;
+  color: var(--kl-accent);
+  letter-spacing: 0.01em;
+}
+.kl-mode,
+.kl-footer-label {
+  color: var(--kl-muted);
+  font-size: 12px;
+}
+.kl-spacer {
+  flex: 1;
+}
+
+.kl-body {
+  padding: 14px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.kl-body h3 {
+  margin: 18px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kl-muted);
+}
+
+.kl-root button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+  border-radius: 8px;
+}
+.kl-root button:focus-visible {
+  outline: 2px solid var(--kl-accent);
+  outline-offset: 1px;
+}
+.kl-icon {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 15px;
+  padding: 0;
+}
+.kl-icon:hover {
+  background: var(--kl-surface);
+  border-color: var(--kl-border);
+}
+.kl-header .kl-icon {
+  font-size: 20px;
+  color: var(--kl-muted);
+}
+.kl-add {
+  font-weight: 700;
+  color: var(--kl-accent);
+}
+.kl-done {
+  color: var(--kl-good);
+  cursor: default;
+}
+.kl-busy {
+  opacity: 0.5;
+}
+.kl-toggle {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 7px;
+  font-size: 12px;
+  color: var(--kl-muted);
+  border-color: var(--kl-border) !important;
+}
+.kl-toggle[aria-pressed="true"] {
+  background: var(--kl-accent);
+  color: var(--kl-accent-fg);
+  border-color: var(--kl-accent) !important;
+}
+.kl-chip {
+  padding: 3px 10px;
+  font-size: 12px;
+  border-color: var(--kl-border) !important;
+  background: var(--kl-bg) !important;
+}
+.kl-chip:hover:not(:disabled) {
+  border-color: var(--kl-accent) !important;
+}
+.kl-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.kl-link {
+  font-size: 12px;
+  color: var(--kl-accent) !important;
+  padding: 3px 4px;
+}
+.kl-link:hover {
+  text-decoration: underline;
+}
+.kl-primary {
+  background: var(--kl-accent) !important;
+  color: var(--kl-accent-fg) !important;
+  padding: 7px 14px;
+  font-weight: 600;
+}
+
+.kl-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.kl-foreign {
+  flex: 1;
+  font-size: 18px;
+  line-height: 2.1;
+  word-break: break-word;
+}
+.kl-big {
+  font-size: 24px;
+  line-height: 2.2;
+}
+.kl-root ruby {
+  ruby-position: over;
+}
+.kl-root rt {
+  font-size: 0.5em;
+  color: var(--kl-ruby);
+  letter-spacing: 0;
+  user-select: none;
+}
+.kl-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+.kl-roman {
+  color: var(--kl-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+.kl-english {
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+.kl-vocab,
+.kl-grammar {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.kl-vocab li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--kl-border);
+}
+.kl-vocab li:last-child {
+  border-bottom: 0;
+}
+.kl-vocab-main {
+  flex: 1;
+  min-width: 0;
+}
+.kl-vocab .kl-foreign {
+  font-size: 17px;
+  line-height: 1.9;
+  margin-right: 6px;
+}
+.kl-asused {
+  color: var(--kl-muted);
+  font-size: 13px;
+  margin-right: 6px;
+}
+.kl-gloss {
+  font-size: 13px;
+}
+.kl-pos {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--kl-muted);
+  border: 1px solid var(--kl-border);
+  border-radius: 999px;
+  padding: 0 6px;
+}
+.kl-grammar li {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: var(--kl-surface);
+  border-radius: 8px;
+  border-left: 3px solid var(--kl-accent);
+}
+.kl-pattern {
+  font-weight: 700;
+  font-size: 15px;
+}
+.kl-example {
+  margin-top: 4px;
+  color: var(--kl-muted);
+}
+.kl-notes {
+  margin: 0;
+  color: var(--kl-fg);
+}
+
+.kl-loading,
+.kl-error {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--kl-muted);
+}
+.kl-error p {
+  margin: 0;
+  color: var(--kl-fg);
+}
+.kl-quote {
+  font-size: 13px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.kl-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--kl-border);
+  border-top-color: var(--kl-accent);
+  animation: kl-spin 0.8s linear infinite;
+}
+@keyframes kl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kl-spinner {
+    animation-duration: 2.4s;
+  }
+}

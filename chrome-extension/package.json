@@ -1,0 +1,20 @@
+{
+  "name": "kotolens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Highlight, right-click, and learn Japanese & Korean with furigana, audio, grammar, and flashcards.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "icons": "python3 scripts/make_icons.py",
+    "package": "node scripts/build.mjs --zip",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

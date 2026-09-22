@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>KotoLens harness</title>
+<style>body{font-family:system-ui;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.7} p{font-size:18px}</style></head>
+<body>
+<h1>Harness</h1>
+<p id="ja">昨日、友達と新しいレストランに行きました。料理はとても美味しかったので、また行きたいと思っています。</p>
+<p id="en">The weather has been unusually warm this week, so we decided to have a picnic by the river.</p>
+<pre id="log"></pre>
+<script>
+const SAMPLE = {
+  selection: { text: "美味しかった", segments: [{text:"美味",reading:"おい"},{text:"しかった",reading:""}], romanization: "oishikatta", english: "was delicious" },
+  sentence: { text: "料理はとても美味しかったので、また行きたいと思っています。",
+    segments: [{text:"料理",reading:"りょうり"},{text:"はとても",reading:""},{text:"美味",reading:"おい"},{text:"しかったので、また",reading:""},{text:"行",reading:"い"},{text:"きたいと",reading:""},{text:"思",reading:"おも"},{text:"っています。",reading:""}],
+    romanization: "Ryōri wa totemo oishikatta node, mata ikitai to omotte imasu.",
+    english: "The food was so delicious that I'm thinking I'd like to go again." },
+  vocabulary: [
+    { word:"美味しい", as_used:"美味しかった", reading:"おいしい", romanization:"oishii", meaning:"delicious", part_of_speech:"i-adjective" },
+    { word:"料理", as_used:"料理", reading:"りょうり", romanization:"ryōri", meaning:"cooking; food, cuisine", part_of_speech:"noun" },
+    { word:"思う", as_used:"思っています", reading:"おもう", romanization:"omou", meaning:"to think", part_of_speech:"godan verb" }
+  ],
+  grammar_points: [
+    { pattern:"〜かった", explanation:"Past tense of an i-adjective: drop い and add かった.", example:"美味しかった" },
+    { pattern:"〜ので", explanation:"Gives a reason, softer and more objective than から.", example:"美味しかったので" },
+    { pattern:"〜たいと思っています", explanation:"Expresses a desire the speaker has been holding: 'I'm thinking I'd like to…'.", example:"また行きたいと思っています" }
+  ],
+  notes: "美味しい is often written in kana (おいしい) in casual text."
+};
+const log = (x) => (document.getElementById("log").textContent += JSON.stringify(x, null, 1) + "\n");
+const store = {};
+window.chrome = {
+  runtime: {
+    id: "test",
+    onMessage: { addListener(fn) { window.__kl = fn; } },
+    async sendMessage(msg) {
+      log(msg);
+      if (msg.type === "kotolens:translate") { await new Promise(r => setTimeout(r, 300)); return { result: SAMPLE, plan: { studyLanguage: "ja", direction: "explain" } }; }
+      if (msg.type === "kotolens:addCard") return { ok: true };
+      return { ok: true };
+    },
+  },
+  storage: {
+    sync: { async get(d) { return { ...d, ...store }; }, async set(o) { Object.assign(store, o); } },
+    local: { async get(d) { return d; }, async set() {} },
+  },
+};
+window.selectAndOpen = (id, word, target) => {
+  const node = document.getElementById(id).firstChild;
+  const i = node.data.indexOf(word);
+  const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + word.length);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  window.__kl({ type: "kotolens:open", target, selectionText: word });
+};
+</script>
+<script src="../dist/content.js"></script>
+</body></html>

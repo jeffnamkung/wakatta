@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "KotoLens – Japanese & Korean Reader",
+  "short_name": "KotoLens",
+  "version": "0.1.0",
+  "description": "Highlight text and right-click to translate to/from Japanese & Korean with furigana, audio, grammar notes, and flashcards.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "KotoLens",
+    "default_popup": "pages/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "pages/options.html",
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage", "tts", "alarms"],
+  "host_permissions": ["https://api.anthropic.com/*"],
+  "commands": {
+    "explain-selection": {
+      "suggested_key": { "default": "Alt+Shift+K", "mac": "Alt+Shift+K" },
+      "description": "Explain the highlighted Japanese/Korean text"
+    }
+  }
+}

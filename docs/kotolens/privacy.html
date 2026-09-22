@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+        }
+        h1 { font-size: 1.8em; margin-bottom: 4px; }
+        h2 { font-size: 1.2em; margin-top: 28px; }
+        .subtitle { color: #666; font-size: 0.95em; margin-bottom: 32px; }
+        p, li { margin: 12px 0; }
+        a { color: #007aff; }
+        code { background: #eee; padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+    </style>
+    <title>KotoLens - Privacy Policy</title>
+</head>
+<body>
+    <h1>KotoLens — Privacy Policy</h1>
+    <p class="subtitle">Chrome extension for reading Japanese &amp; Korean · Last updated: September 22, 2026</p>
+
+    <p>KotoLens is a browser extension that helps you read and learn Japanese and Korean. This policy explains what data it handles.</p>
+
+    <h2>What KotoLens sends, and when</h2>
+    <p>KotoLens sends data only when you choose a KotoLens menu item, press its keyboard shortcut, or use the lookup box in its toolbar popup. It then sends the following directly from your browser to Anthropic's API (<code>api.anthropic.com</code>):</p>
+    <ul>
+        <li>the text you highlighted or typed</li>
+        <li>the sentence and up to about 1,400 characters of the paragraph around it, so the translation fits the context</li>
+        <li>the title of the page</li>
+    </ul>
+    <p>Anthropic processes this data under its own terms and privacy policy, which apply to your API key: <a href="https://www.anthropic.com/legal/privacy">anthropic.com/legal/privacy</a>.</p>
+    <p>KotoLens has no servers. It does not collect analytics, track your browsing, or read pages you haven't asked it to translate.</p>
+
+    <h2>What KotoLens stores on your device</h2>
+    <ul>
+        <li><strong>Your Anthropic API key</strong>, in <code>chrome.storage.local</code>. It stays on this device and is sent only to <code>api.anthropic.com</code>.</li>
+        <li><strong>Your flashcards</strong>, in <code>chrome.storage.local</code>. Each card holds the word, its reading, meaning, example sentence, and the URL and title of the page you saved it from.</li>
+        <li><strong>Your preferences</strong> (model, furigana and romanization toggles, speaking speed, voices), in <code>chrome.storage.sync</code>. If Chrome sync is on, Google syncs these to your other Chrome browsers. Your API key and flashcards are never synced.</li>
+    </ul>
+    <p>To delete all of this, remove the extension or delete your cards on its flashcards page.</p>
+
+    <h2>Text-to-speech</h2>
+    <p>The 🔊 buttons use Chrome's built-in <code>chrome.tts</code> API. Depending on the voice you pick, your operating system or Google may process the spoken text.</p>
+
+    <h2>Sharing</h2>
+    <p>KotoLens does not sell or share your data, and does not use it for anything other than the features described above.</p>
+
+    <h2>Contact</h2>
+    <p>Questions or bug reports: <strong><a href="mailto:jeffnamkung@gmail.com">jeffnamkung@gmail.com</a></strong></p>
+</body>
+</html>

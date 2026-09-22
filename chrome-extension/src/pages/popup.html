@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>KotoLens</title>
+  <link rel="stylesheet" href="pages.css" />
+  <style>
+    body { width: 340px; }
+    .pad { padding: 16px; }
+    .due { display: flex; align-items: baseline; gap: 8px; margin: 12px 0; }
+    .due b { font-size: 32px; line-height: 1; }
+    .warn { background: var(--surface-2); border-left: 3px solid var(--warn); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
+    .hint { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 12px; margin-top: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+    nav { display: flex; gap: 4px; border-top: 1px solid var(--border); padding: 8px 10px; }
+  </style>
+</head>
+<body>
+  <div class="pad">
+    <div class="row"><span class="brand">KotoLens</span><span class="spacer"></span><span class="muted small" id="total"></span></div>
+    <div id="nokey" class="warn" hidden>Add your Anthropic API key to start. <a href="#" id="setup">Open settings →</a></div>
+    <div class="due"><b id="dueCount">0</b><span class="muted">cards due for review</span></div>
+    <button class="primary" id="review" style="width:100%">Review now</button>
+
+    <label for="text" style="display:block;margin-top:16px;font-weight:600">Look up text</label>
+    <textarea id="text" rows="3" placeholder="Type or paste English, 日本語, or 한국어…"></textarea>
+    <div class="grid">
+      <button data-target="ja">→ 日本語</button>
+      <button data-target="ko">→ 한국어</button>
+      <button data-target="en">→ English</button>
+    </div>
+    <div class="hint">Tip: highlight text on any page, right-click, and choose a KotoLens option. Shortcut: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> explains the selection.</div>
+  </div>
+  <nav>
+    <button class="ghost" id="cards">All cards</button>
+    <span class="spacer"></span>
+    <button class="ghost" id="settings">Settings</button>
+  </nav>
+  <script src="popup.js"></script>
+</body>
+</html>
